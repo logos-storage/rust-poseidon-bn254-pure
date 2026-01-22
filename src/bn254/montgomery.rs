@@ -8,15 +8,15 @@
 
 use std::fmt;
 
-use crate::platform::*;
-use crate::bigint::*;
-use crate::constant::*;
+use crate::bn254::platform::*;
+use crate::bn254::bigint::*;
+use crate::bn254::constant::*;
 
 //------------------------------------------------------------------------------
 
 type Big = BigInt<8>;
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct Mont {
   pub big: Big
 }
@@ -24,17 +24,6 @@ pub struct Mont {
 pub const MONT_R1 : Mont = Mont { big: BIG_R1 };
 pub const MONT_R2 : Mont = Mont { big: BIG_R2 };
 pub const MONT_R3 : Mont = Mont { big: BIG_R3 };
-
-//------------------------------------------------------------------------------
-
-impl fmt::Display for Mont {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let _   = f.write_str("[");
-    let res = f.write_fmt(format_args!("{}",self.big));
-    let _   = f.write_str("]");
-    res
-  }
-}
 
 //------------------------------------------------------------------------------
 
@@ -151,6 +140,26 @@ impl Mont {
 
 //------------------------------------------------------------------------------
 
+// prints the internal representation
+impl fmt::Debug for Mont {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let _   = f.write_str("[");
+    let res = f.write_fmt(format_args!("{}",self.big));
+    let _   = f.write_str("]");
+    res
+  }
+}
+
+// prints the standard representation
+impl fmt::Display for Mont {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let big: Big = Mont::convert_to_big(&self);
+    f.write_fmt(format_args!("{}",big))
+  }
+}
+
+//------------------------------------------------------------------------------
+
 impl Mont {
   pub fn print_internal(s: &str, A: &Mont) {
     println!("{} = [{}]", s, A.big);
@@ -158,6 +167,10 @@ impl Mont {
 
   pub fn print_standard(s: &str, A: &Mont) {
     println!("{} = {}", s, Mont::convert_to_big(A) ) ;
+  }
+
+  pub fn print(s: &str, A: &Mont) {
+    Mont::print_standard(&s, &A);
   }
 }
 

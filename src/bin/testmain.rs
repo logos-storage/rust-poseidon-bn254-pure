@@ -1,8 +1,11 @@
 
-use rust_poseidon1::bigint::*;
-use rust_poseidon1::constant::*;
-use rust_poseidon1::montgomery::*;
-use rust_poseidon1::field::*;
+use rust_poseidon1::bn254::bigint::*;
+use rust_poseidon1::bn254::constant::*;
+use rust_poseidon1::bn254::montgomery::*;
+use rust_poseidon1::bn254::field::*;
+
+//use rust_poseidon1::poseidon2::constants::*;
+use rust_poseidon1::poseidon2::permutation::*;
 
 //------------------------------------------------------------------------------
 
@@ -80,8 +83,8 @@ fn main() {
   println!("-----");
 
   println!("M1*M2 = {}", Mont::mul( &MONT1, &MONT2) );  
-  println!("M1*M2 = {}", Mont::mul( &MONT1, &MONT2) );  
-  println!("M1*M2 = {}", Mont::mul( &MONT1, &MONT2) );  
+  println!("M2*M3 = {}", Mont::mul( &MONT2, &MONT3) );  
+  println!("M3*M1 = {}", Mont::mul( &MONT3, &MONT1) );  
 
   println!("");
   println!("felt (standard repr):");
@@ -95,6 +98,35 @@ fn main() {
   println!("F1*F2 = {}", Felt::mul( &FELT1, &FELT2) );  
   println!("F2*F3 = {}", Felt::mul( &FELT2, &FELT3) );  
   println!("F3*F1 = {}", Felt::mul( &FELT3, &FELT1) );  
+
+  //----------------------------------------------------------------------------
+
+  println!("");
+  println!("poseidon2 KAT:");
+  println!("");
+
+  let input  = ( Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) );
+  let output = permute_felt( &input );
+
+  println!("x  = {}", input.0 );
+  println!("y  = {}", input.1 );
+  println!("z  = {}", input.2 );
+
+  println!("~> ");
+
+  // expected output:
+  //
+  // x' = 0x30610a447b7dec194697fb50786aa7421494bd64c221ba4d3b1af25fb07bd103 
+  // y' = 0x13f731d6ffbad391be22d2ac364151849e19fa38eced4e761bcd21dbdc600288 
+  // z' = 0x1433e2c8f68382c447c5c14b8b3df7cbfd9273dd655fe52f1357c27150da786f 
+  //
+  println!("x' = {}", output.0 );
+  println!("y' = {}", output.1 );
+  println!("z' = {}", output.2 );
+
+  println!("");
+
+  //----------------------------------------------------------------------------
 
 }
 

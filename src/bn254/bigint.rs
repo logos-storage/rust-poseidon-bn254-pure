@@ -9,11 +9,11 @@
 use std::fmt;
 use std::cmp::Ordering;
 
-use crate::platform::*;
+use crate::bn254::platform::*;
 
 //------------------------------------------------------------------------------
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct BigInt<const N: usize> {
   pub limbs: [u32; N]
 }

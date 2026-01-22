@@ -11,15 +11,15 @@
 
 use std::fmt;
 
-use crate::bigint::*;
-use crate::constant::*;
-use crate::montgomery::*;
+use crate::bn254::bigint::*;
+use crate::bn254::constant::*;
+use crate::bn254::montgomery::*;
 
 //------------------------------------------------------------------------------
 
 type Big = BigInt<8>;
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 pub struct Felt {
   pub big: Big
 }

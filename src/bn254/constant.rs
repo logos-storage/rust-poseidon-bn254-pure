@@ -1,5 +1,5 @@
 
-use crate::bigint::*;
+use crate::bn254::bigint::*;
 
 //------------------------------------------------------------------------------
 // field prime (BN254 scalar field)
