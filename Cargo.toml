@@ -1,6 +1,6 @@
 [package]
-name    = "rust-poseidon1"
-version = "0.0.0"
+name    = "rust-poseidon-bn254-pure"
+version = "0.0.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["Balazs Komuves"]

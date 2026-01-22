@@ -1,4 +1,6 @@
 
+-- some basic "sanity check"-type testing
+
 {-# LANGUAGE PackageImports #-}
 
 import Data.List

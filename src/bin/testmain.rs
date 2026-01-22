@@ -1,11 +1,10 @@
 
-use rust_poseidon1::bn254::bigint::*;
-use rust_poseidon1::bn254::constant::*;
-use rust_poseidon1::bn254::montgomery::*;
-use rust_poseidon1::bn254::field::*;
+use rust_poseidon_bn254_pure::bn254::bigint::*;
+use rust_poseidon_bn254_pure::bn254::constant::*;
+use rust_poseidon_bn254_pure::bn254::montgomery::*;
+use rust_poseidon_bn254_pure::bn254::field::*;
 
-//use rust_poseidon1::poseidon2::constants::*;
-use rust_poseidon1::poseidon2::permutation::*;
+use rust_poseidon_bn254_pure::poseidon2::permutation::*;
 
 //------------------------------------------------------------------------------
 
