@@ -1,4 +1,8 @@
 
+//
+// big integers, represented as little-endian arrays of u32-s
+//
+
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 
@@ -9,6 +13,7 @@ use crate::platform::*;
 
 //------------------------------------------------------------------------------
 
+#[derive(Clone)]
 pub struct BigInt<const N: usize> {
   pub limbs: [u32; N]
 }
@@ -52,7 +57,28 @@ impl<const N: usize> BigInt<N> {
     BigInt { limbs: ls }
   }
 
-  pub fn equal(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
+  pub fn zero() -> BigInt<N> {
+    BigInt { limbs: [0; N] }
+  }
+
+  pub fn from_u32(x: u32) -> BigInt<N> {
+    let mut xs = [0; N];
+    xs[0] = x;
+    BigInt { limbs: xs }
+  }
+
+  pub fn is_zero(big: &BigInt<N>) -> bool {
+    let mut ok : bool = true;
+    for i in 0..N {
+      if big.limbs[i] != 0 {
+        ok = false;
+        break;
+      }
+    }
+    ok
+  }
+
+  pub fn is_equal(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
     let mut ok : bool = true;
     for i in 0..N {
       if big1.limbs[i] != big2.limbs[i] {
@@ -76,6 +102,22 @@ impl<const N: usize> BigInt<N> {
       }
     }
     res
+  }
+
+  pub fn is_lt(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
+    BigInt::cmp(&big1, &big2) == Ordering::Less
+  }
+
+  pub fn is_gt(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
+    BigInt::cmp(&big1, &big2) == Ordering::Greater
+  }
+
+  pub fn is_le(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
+    !BigInt::is_gt(&big1, &big2)
+  }
+
+  pub fn is_ge(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
+    !BigInt::is_lt(&big1, &big2)
   }
 
   pub fn addCarry(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
@@ -157,8 +199,8 @@ impl<const N: usize> BigInt<N> {
   }
 
   // TODO: optimize this!
-  pub fn sqr(big1: &BigInt<N>) -> BigInt<{N+N}> {
-    BigInt::multiply(big1,big1)
+  pub fn sqr(big: &BigInt<N>) -> BigInt<{N+N}> {
+    BigInt::multiply(big,big)
   }
 
 }
