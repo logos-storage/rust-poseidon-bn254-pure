@@ -20,6 +20,6 @@ name  = "testmain"
 test  = false
 bench = false
 
-#[[bench]]
-#name = "iterated_perm"
-#harness = false
+[[bench]]
+name = "iterated_perm"
+harness = false

@@ -1,4 +1,6 @@
 
+use std::time::Instant;
+
 use rust_poseidon_bn254_pure::bn254::bigint::*;
 use rust_poseidon_bn254_pure::bn254::constant::*;
 use rust_poseidon_bn254_pure::bn254::montgomery::*;
@@ -124,6 +126,19 @@ fn main() {
   println!("z' = {}", output.2 );
 
   println!("");
+  println!("poseidon2 iterated 10,000 times:");
+  println!("");
+
+  let now = Instant::now();
+  let mut state: (Felt,Felt,Felt) = input.clone(); 
+  for _i in 0..10000 {
+    state = permute_felt(&state);
+  }
+  println!("x'' = {}", state.0 );
+  println!("y'' = {}", state.1 );
+  println!("z'' = {}", state.2 );
+  let elapsed = now.elapsed();
+  println!("Elapsed: {:.3?}", elapsed);
 
   //----------------------------------------------------------------------------
 
