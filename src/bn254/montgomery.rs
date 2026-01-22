@@ -83,7 +83,7 @@ impl Mont {
 
     for i in 0..8 {
       let mut carry: u32 = 0;
-      let m: u32 = truncMul32( T[i] , MONT_Q );
+      let m: u32 = mulTrunc32( T[i] , MONT_Q );
       for j in 0..8 {
         let (lo,hi) = mulAddAdd32( m, FIELD_PRIME.limbs[j], carry, T[i+j] );
         T[i+j] = lo;
@@ -134,6 +134,13 @@ impl Mont {
     let mut tmp: [u32; 16] = [0; 16];
     for i in 0..8 { tmp[i] = mont.big.limbs[i] } 
     Mont::redc( BigInt { limbs: tmp } )
+  }
+
+  // take a small number, interpret it as modulo P, 
+  // and convert to Montgomery representation
+  pub fn convert_from_u32(x: u32) -> Mont {
+    let big: Big = BigInt::from_u32(x);
+    Mont::unsafe_convert_from_big( &big )
   }
 
 }

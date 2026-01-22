@@ -5,9 +5,11 @@
 
 #![allow(dead_code)]
 #![allow(non_snake_case)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
 
 use std::fmt;
-use std::cmp::Ordering;
+use std::cmp::{Ordering,min};
 
 use crate::bn254::platform::*;
 
@@ -205,10 +207,50 @@ impl<const N: usize> BigInt<N> {
     BigInt::multiply(big1,big2)
   }
 
-  // TODO: optimize this!
+  // TODO: optimize this?!
   pub fn sqr(big: &BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big,big)
   }
+
+  pub fn sqr_naive(big: &BigInt<N>) -> BigInt<{N+N}> {
+    BigInt::multiply(big,big)
+  }
+
+  // -----------------------------------
+
+/*
+
+  pub fn sqr_isnt_faster(big: &BigInt<N>) -> BigInt<{N+N}> {
+
+    let mut product : [u32; N+N] = [0; N+N];
+    let mut carry   : u64 = 0;
+
+    for k in 0..(N+N-1) {
+
+      let mut sum_lo: u64 = carry;
+      let mut sum_hi: u64 = 0;
+      for i in 0..min(N,k+1) {
+        let j = k - i;
+        if j < N && i <= j {
+          let (lo,hi) = mulExt32( big.limbs[i], big.limbs[j] );
+          sum_lo += (lo as u64);
+          sum_hi += (hi as u64);
+          if i < j {
+            sum_lo += (lo as u64);
+            sum_hi += (hi as u64);
+          }
+        }
+      }
+      let (u,v) = takeApart64(sum_lo);
+      product[k] = u;
+      carry = sum_hi + (v as u64);
+    }
+
+    product[N+N-1] = (carry as u32);
+    BigInt { limbs: product }
+  }
+
+*/
 
 }
 
