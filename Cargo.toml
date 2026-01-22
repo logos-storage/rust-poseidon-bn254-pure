@@ -15,8 +15,16 @@ criterion = "0.3"
 [lib]
 bench = false
 
+[profile.release]
+debug = true
+
 [[bin]]
 name  = "testmain"
+test  = false
+bench = false
+
+[[bin]]
+name  = "twenty"
 test  = false
 bench = false
 

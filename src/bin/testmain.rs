@@ -134,6 +134,13 @@ fn main() {
   for _i in 0..10000 {
     state = permute_felt(&state);
   }
+
+  // expected output:
+  //
+  // x'' = 0x27f23fcc813ee313937d46b6d5bab2df03fcb3cf1829f0332ba9f9968509f130
+  // y'' = 0x138d88ea0ece1c9618254fe2146a6120080e16128467187bf1448e80f31eee3f
+  // z'' = 0x1e51d60083aa3e8fa189e1c72844c5e09225f5977a834f53b471bf0de0dd59eb
+  //
   println!("x'' = {}", state.0 );
   println!("y'' = {}", state.1 );
   println!("z'' = {}", state.2 );

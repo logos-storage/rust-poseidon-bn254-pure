@@ -16,12 +16,11 @@ use crate::bn254::platform::*;
 //------------------------------------------------------------------------------
 
 #[derive(Copy, Clone)]
-pub struct BigInt<const N: usize> {
-  pub limbs: [u32; N]
-}
+pub struct BigInt<const N: usize>([u32; N]);
 
+#[inline(always)]
 pub fn mkBigInt<const N: usize>(ls: [u32; N]) -> BigInt<N> {
-  BigInt { limbs: ls }
+  BigInt(ls)
 }
 
 pub type BigInt256 = BigInt<8>;
@@ -29,6 +28,7 @@ pub type BigInt512 = BigInt<16>;
 
 //------------------------------------------------------------------------------
 
+#[inline(always)]
 pub fn boolToU32(c: bool) -> u32 {
   if c { 1 } else { 0 }
 }
@@ -39,7 +39,7 @@ impl<const N: usize> fmt::Display for BigInt<N> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let _ = f.write_str("0x");
     for i in 0..N {
-      let _ = f.write_fmt(format_args!("{:08x}",self.limbs[N-1-i]));
+      let _ = f.write_fmt(format_args!("{:08x}",self.0[N-1-i]));
     }   
     Ok(())
   }
@@ -55,31 +55,37 @@ impl<const N: usize> BigInt<N> {
 
 impl<const N: usize> BigInt<N> {
 
+  #[inline(always)]
+  pub fn unwrap(big: BigInt<N>) -> [u32; N] {
+    big.0
+  }
+ 
+  #[inline(always)]
   pub const fn make(ls: [u32; N]) -> BigInt<N> { 
-    BigInt { limbs: ls }
+    BigInt(ls)
   }
 
   pub fn truncate1(big : &BigInt<{N+1}>) -> BigInt<N> {
     // let small: [u32; N] = &big.limbs[0..N];
     let mut small: [u32; N] = [0; N];
-    for i in 0..N { small[i] = big.limbs[i]; }
-    BigInt { limbs: small }
+    for i in 0..N { small[i] = big.0[i]; }
+    BigInt(small)
   }
 
   pub fn zero() -> BigInt<N> {
-    BigInt { limbs: [0; N] }
+    BigInt([0; N])
   }
 
   pub fn from_u32(x: u32) -> BigInt<N> {
     let mut xs = [0; N];
     xs[0] = x;
-    BigInt { limbs: xs }
+    BigInt(xs)
   }
 
   pub fn is_zero(big: &BigInt<N>) -> bool {
     let mut ok : bool = true;
     for i in 0..N {
-      if big.limbs[i] != 0 {
+      if big.0[i] != 0 {
         ok = false;
         break;
       }
@@ -90,7 +96,7 @@ impl<const N: usize> BigInt<N> {
   pub fn is_equal(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
     let mut ok : bool = true;
     for i in 0..N {
-      if big1.limbs[i] != big2.limbs[i] {
+      if big1.0[i] != big2.0[i] {
         ok = false;
         break;
       }
@@ -101,11 +107,11 @@ impl<const N: usize> BigInt<N> {
   pub fn cmp(big1: &BigInt<N>, big2: &BigInt<N>) -> Ordering {
     let mut res : Ordering = Ordering::Equal;
     for i in (0..N).rev() {
-      if big1.limbs[i] < big2.limbs[i] {
+      if big1.0[i] < big2.0[i] {
         res = Ordering::Less;
         break;
       }
-      if big1.limbs[i] > big2.limbs[i] {
+      if big1.0[i] > big2.0[i] {
         res = Ordering::Greater;
         break;
       }
@@ -113,6 +119,7 @@ impl<const N: usize> BigInt<N> {
     res
   }
 
+  #[inline(always)]
   pub fn is_lt(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
     BigInt::cmp(&big1, &big2) == Ordering::Less
   }
@@ -129,27 +136,29 @@ impl<const N: usize> BigInt<N> {
     !BigInt::is_lt(&big1, &big2)
   }
 
+  #[inline(always)]
   pub fn addCarry(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
-      let (z,cout) = addCarry32( big1.limbs[i] , big2.limbs[i] , c);
+      let (z,cout) = addCarry32( big1.0[i] , big2.0[i] , c);
       zs[i] = z;
       c = cout;
     }
-    let big: BigInt<N> = BigInt { limbs: zs }; 
+    let big: BigInt<N> = BigInt(zs);
     (big, c)
   }
 
+  #[inline(always)]
   pub fn subBorrow(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
-      let (z,cout) = subBorrow32( big1.limbs[i] , big2.limbs[i] , c);
+      let (z,cout) = subBorrow32( big1.0[i] , big2.0[i] , c );
       zs[i] = z;
       c = cout;
     }
-    let big: BigInt<N> = BigInt { limbs: zs }; 
+    let big: BigInt<N> = BigInt(zs); 
     (big, c)
   }
 
@@ -167,11 +176,11 @@ impl<const N: usize> BigInt<N> {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
-      let (lo,hi) = mulAdd32(scalar, big2.limbs[i], c);
+      let (lo,hi) = mulAdd32(scalar, big2.0[i], c);
       zs[i] = lo;
       c = hi;
     }
-    let big: BigInt<N> = BigInt { limbs: zs }; 
+    let big: BigInt<N> = BigInt(zs); 
     (big, c)
   }
 
@@ -179,11 +188,11 @@ impl<const N: usize> BigInt<N> {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
-      let (lo,hi) = mulAddAdd32(scalar, big2.limbs[i], c, add.limbs[i]);
+      let (lo,hi) = mulAddAdd32(scalar, big2.0[i], c, add.0[i]);
       zs[i] = lo;
       c = hi;
     }
-    let big: BigInt<N> = BigInt { limbs: zs }; 
+    let big: BigInt<N> = BigInt(zs); 
     (big, c)
   }
 
@@ -191,16 +200,16 @@ impl<const N: usize> BigInt<N> {
     let mut product : [u32; N+M] = [0; N+M];
     let mut state   : [u32; N]   = [0; N];
     for j in 0..M {
-      let (scaled,carry) = BigInt::scaleAdd( big2.limbs[j], &big1, &(BigInt { limbs: state }) );
-      product[j] = scaled.limbs[0];
-      for i in 1..N { state[i-1] = scaled.limbs[i] }
+      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+      product[j] = scaled.0[0];
+      for i in 1..N { state[i-1] = scaled.0[i] }
       state[N-1] = carry;
     }
     for i in 0..N { 
       product[i+M] = state[i]
     }
   
-    BigInt { limbs: product }
+    BigInt(product)
   }
 
   pub fn mul(big1: &BigInt<N>, big2: &BigInt<N>) -> BigInt<{N+N}> {
