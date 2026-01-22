@@ -43,6 +43,7 @@ fn main() {
   Mont::print_internal("MONT1",&MONT1);
   Mont::print_internal("MONT2",&MONT2);
   Mont::print_internal("MONT3",&MONT3);
+  println!("-----");
   Mont::print_standard("MONT1",&MONT1);
   Mont::print_standard("MONT2",&MONT2);
   Mont::print_standard("MONT3",&MONT3);
@@ -92,8 +93,8 @@ fn main() {
   println!("-----");
 
   println!("F1*F2 = {}", Felt::mul( &FELT1, &FELT2) );  
-  println!("F1*F2 = {}", Felt::mul( &FELT1, &FELT2) );  
-  println!("F1*F2 = {}", Felt::mul( &FELT1, &FELT2) );  
+  println!("F2*F3 = {}", Felt::mul( &FELT2, &FELT3) );  
+  println!("F3*F1 = {}", Felt::mul( &FELT3, &FELT1) );  
 
 }
 

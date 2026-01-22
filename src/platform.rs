@@ -21,8 +21,13 @@ pub fn subBorrow32(x: u32, y: u32, cin: bool) -> (u32,bool) {
   u32::borrowing_sub(x,y,cin)
 }
 
+pub fn truncMul32(x: u32, y: u32) -> u32 {
+  u32::wrapping_mul(x,y)
+}
+
 pub fn extMul32(x: u32, y: u32) -> (u32,u32) {
-  u32::carrying_mul(x,y,0)
+  // u32::carrying_mul(x,y,0)
+  u32::widening_mul(x,y)
 }
 
 pub fn mulAdd32(x: u32, y: u32, a: u32) -> (u32,u32) {

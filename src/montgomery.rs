@@ -8,6 +8,7 @@
 
 use std::fmt;
 
+use crate::platform::*;
 use crate::bigint::*;
 use crate::constant::*;
 
@@ -85,11 +86,41 @@ impl Mont {
   }
 
   // the Montgomery reduction algorithm
+  // <https://en.wikipedia.org/wiki/Montgomery_modular_multiplication#Montgomery_arithmetic_on_multiprecision_integers>
   fn redc(input: BigInt<16>) -> Big {
-    let mut T: [u32; 17] = [0; 17];
-    for i in 0..16 { T[i] = input.limbs[i] }
 
-    BigInt::zero()
+    let mut T: [u32; 17] = [0; 17];
+    for i in 0..16 { T[i] = input.limbs[i]; }
+
+    for i in 0..8 {
+      let mut carry: u32 = 0;
+      let m: u32 = truncMul32( T[i] , MONT_Q );
+      for j in 0..8 {
+        let (lo,hi) = mulAddAdd32( m, FIELD_PRIME.limbs[j], carry, T[i+j] );
+        T[i+j] = lo;
+        carry  = hi;
+      }
+      for j in 8..(17-i) {
+        let (x,c) = addCarry32_( T[i+j] , carry );
+        T[i+j] = x;
+        carry  = boolToU32(c);
+      }
+    }
+
+    let mut S : [u32; 9] = [0; 9];
+    for i in 0..9 { S[i] = T[8+i]; }
+
+    let A     :  BigInt<9>       = BigInt { limbs: S };
+    let (B,c) : (BigInt<9>,bool) = BigInt::subBorrow( &A , &PRIME_EXT );
+
+    if c {
+      // `A - prime < 0` is equivalent to `A < prime` 
+      BigInt::truncate1(&A)
+    }
+    else {
+      // `A - prime >= 0` is equivalent to `A >= prime`
+      BigInt::truncate1(&B)
+    }
   }
 
   pub fn sqr(mont: &Mont) -> Mont {

@@ -17,4 +17,4 @@ and [`staging-agda`](https://github.com/faulhornlabs/staging-agda/).
 - [ ] add a 64 bit version
 - [ ] add more Poseidon2 state widths than `t=3`
 - [ ] implement `circomlib`-compatible Poseidon
-
+- [ ] further optimizations

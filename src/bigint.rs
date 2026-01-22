@@ -27,7 +27,7 @@ pub type BigInt512 = BigInt<16>;
 
 //------------------------------------------------------------------------------
 
-fn boolToU32(c: bool) -> u32 {
+pub fn boolToU32(c: bool) -> u32 {
   if c { 1 } else { 0 }
 }
 
@@ -55,6 +55,13 @@ impl<const N: usize> BigInt<N> {
 
   pub const fn make(ls: [u32; N]) -> BigInt<N> { 
     BigInt { limbs: ls }
+  }
+
+  pub fn truncate1(big : &BigInt<{N+1}>) -> BigInt<N> {
+    // let small: [u32; N] = &big.limbs[0..N];
+    let mut small: [u32; N] = [0; N];
+    for i in 0..N { small[i] = big.limbs[i]; }
+    BigInt { limbs: small }
   }
 
   pub fn zero() -> BigInt<N> {
