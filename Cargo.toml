@@ -1,0 +1,25 @@
+[package]
+name    = "rust-poseidon1"
+version = "0.0.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Balazs Komuves"]
+
+default-run = "testmain"
+
+[dependencies]
+
+[dev-dependencies]
+criterion = "0.3"
+
+[lib]
+bench = false
+
+[[bin]]
+name  = "testmain"
+test  = false
+bench = false
+
+#[[bench]]
+#name = "iterated_perm"
+#harness = false
