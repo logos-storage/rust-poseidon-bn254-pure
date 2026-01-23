@@ -28,13 +28,6 @@ pub type BigInt512 = BigInt<16>;
 
 //------------------------------------------------------------------------------
 
-#[inline(always)]
-pub fn boolToU32(c: bool) -> u32 {
-  if c { 1 } else { 0 }
-}
-
-//------------------------------------------------------------------------------
-
 impl<const N: usize> fmt::Display for BigInt<N> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let _ = f.write_str("0x");
@@ -185,11 +178,11 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline]
-  pub fn scaleAdd(scalar: u32, big2: &BigInt<N>, add: &BigInt<N>) -> (BigInt<N>, u32) {
+  pub fn scaleAdd(scalar: u32, vector: &BigInt<N>, add: &BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
-      let (lo,hi) = mulAddAdd32(scalar, big2.0[i], c, add.0[i]);
+      let (lo,hi) = mulAddAdd32(scalar, vector.0[i], c, add.0[i]);
       zs[i] = lo;
       c = hi;
     }
@@ -217,20 +210,61 @@ impl<const N: usize> BigInt<N> {
     BigInt::multiply(big1,big2)
   }
 
+  pub fn sqr_naive(big: &BigInt<N>) -> BigInt<{N+N}> {
+    BigInt::multiply(big,big)
+  }
+
   // TODO: optimize this?!
   pub fn sqr(big: &BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big,big)
   }
 
-  pub fn sqr_naive(big: &BigInt<N>) -> BigInt<{N+N}> {
-    BigInt::multiply(big,big)
-  }
-
-  // -----------------------------------
+// -----------------------------------------------------------------------------
+// half-assed optimization attempts...
 
 /*
+  pub fn sqr_also_slower(big: &BigInt<N>) -> BigInt<{N+N}> {
 
-  pub fn sqr_isnt_faster(big: &BigInt<N>) -> BigInt<{N+N}> {
+    let mut mul_mtx : [[(u32,u32); N]; N] = [[(0,0); N]; N];
+    for i in 0..N {
+      for j in i..N {
+        // i <= j
+        let lo_hi = mulExt32( big.0[i] , big.0[j] );
+        mul_mtx[i][j] = lo_hi;
+        mul_mtx[j][i] = lo_hi;
+      }
+    }
+
+    let mut product : [u32; N+N] = [0; N+N];
+    let mut state   : [u32; N]   = [0; N];
+    for j in 0..N {
+      // let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+
+      let mut scaled : [u32; N] = [0; N];
+      let mut carry  : u32 = 0;
+      for k in 0..N {
+        // scalar = big2.0[j]
+        // vector = big1
+        let (lo,hi) = u64AddAdd32( mul_mtx[j][k], carry, state[k] );
+        scaled[k] = lo;
+        carry     = hi;
+      }
+
+      product[j] = scaled[0];
+      for i in 1..N { state[i-1] = scaled[i] }
+      state[N-1] = carry;
+    }
+
+    for i in 0..N { 
+      product[i+N] = state[i]
+    }
+  
+    BigInt(product)
+  }
+
+// -----------------------------------
+
+  pub fn sqr_is_actually_slower(big: &BigInt<N>) -> BigInt<{N+N}> {
 
     let mut product : [u32; N+N] = [0; N+N];
     let mut carry   : u64 = 0;

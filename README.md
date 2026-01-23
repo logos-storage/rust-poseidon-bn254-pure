@@ -13,9 +13,9 @@ and [`staging-agda`](https://github.com/faulhornlabs/staging-agda/).
 
 ### TODO
 
-- [ ] optimize squaring to use less multiplications
+- [ ] optimize squaring to use less multiplications (?)
 - [ ] benchmark RISC-V cycles
-- [ ] add more Poseidon2 state widths than `t=3`
+- [ ] add more Poseidon2 state widths (not just `t=3`)
 - [ ] implement `circomlib`-compatible Poseidon
 - [ ] add a 64 bit version
 - [ ] more complete testing of the field operations
