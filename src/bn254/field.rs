@@ -49,6 +49,10 @@ impl Felt {
     Felt(BigInt::make(xs))
   }
 
+  pub fn is_valid(felt: &Felt) -> bool {
+    BigInt::is_lt_prime(&felt.0)
+  }
+
   pub fn checked_make( xs: [u32; 8] ) -> Felt {
     let big: Big = BigInt::make(xs);
     if BigInt::is_lt_prime(&big) {
@@ -57,6 +61,26 @@ impl Felt {
     else {
       panic!("Felt::checked_make: not in range")
     }
+  }
+
+  //------------------------------------
+
+  pub fn to_le_bytes(felt: &Felt) -> [u8; 32] {
+    BigInt::to_le_bytes(&felt.0)
+  }
+
+  pub fn unsafe_from_le_bytes(buf: &[u8; 32]) -> Felt {
+    let big = BigInt::from_le_bytes(buf);
+    Felt(big)
+  }
+
+  pub fn to_be_bytes(felt: &Felt) -> [u8; 32] {
+    BigInt::to_be_bytes(&felt.0)
+  }
+
+  pub fn unsafe_from_be_bytes(buf: &[u8; 32]) -> Felt {
+    let big = BigInt::from_be_bytes(buf);
+    Felt(big)
   }
 
   // convert to Montgomery representation
@@ -68,6 +92,8 @@ impl Felt {
   pub fn from_mont(mont: &Mont) -> Felt {
     Felt(Mont::convert_to_big(&mont))
   }
+
+  //------------------------------------
 
   pub fn zero() -> Felt {
     Felt(BigInt::zero())

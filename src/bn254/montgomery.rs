@@ -39,6 +39,34 @@ impl Mont {
     Mont(BigInt::make(xs))
   }
 
+  pub fn is_valid(mont: &Mont) -> bool {
+    BigInt::is_lt_prime(&mont.0)
+  }
+
+  // note: this exports the Montgomery representation!
+  pub fn to_le_bytes(mont: &Mont) -> [u8; 32] {
+    BigInt::to_le_bytes(&mont.0)
+  }
+
+  // note: this assumes the input is already in Montgomery representation!
+  pub fn unsafe_from_le_bytes(buf: &[u8; 32]) -> Mont {
+    let big = BigInt::from_le_bytes(buf);
+    Mont(big)
+  }
+
+  // note: this exports the Montgomery representation!
+  pub fn to_be_bytes(mont: &Mont) -> [u8; 32] {
+    BigInt::to_be_bytes(&mont.0)
+  }
+
+  // note: this assumes the input is already in Montgomery representation!
+  pub fn unsafe_from_be_bytes(buf: &[u8; 32]) -> Mont {
+    let big = BigInt::from_be_bytes(buf);
+    Mont(big)
+  }
+
+  //------------------------------------
+
   #[inline(always)]
   pub fn zero() -> Mont {
     Mont(BigInt::zero())

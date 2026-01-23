@@ -61,6 +61,59 @@ impl<const N: usize> BigInt<N> {
     BigInt(ls)
   }
 
+  //------------------------------------
+  // conversion to/from bytes
+
+  pub fn to_le_bytes(big: &BigInt<N>) -> [u8; 4*N] {
+    let mut buf : [u8; 4*N] = [0; 4*N];
+    for i in 0..N {
+      let xs: [u8; 4] = big.0[i].to_le_bytes();
+      let k = 4*i;
+      for j in 0..4 {
+        buf[k + j] = xs[j];
+      }
+    }
+    buf
+  }
+
+  pub fn from_le_bytes(buf : &[u8; 4*N]) -> BigInt<N> {
+    let mut ws: [u32; N] = [0; N];
+    for i in 0..N {
+      let k = 4*i;
+      let mut xs: [u8; 4] = [0; 4];
+      for j in 0..4 { xs[j] = buf[k+j]; }       // stupid rust...
+      let w: u32 = u32::from_le_bytes(xs);
+      ws[i] = w;
+    }
+    BigInt(ws)
+  }
+
+  pub fn to_be_bytes(big: &BigInt<N>) -> [u8; 4*N] {
+    let mut buf : [u8; 4*N] = [0; 4*N];
+    for i in 0..N {
+      let xs: [u8; 4] = big.0[N-1-i].to_be_bytes();
+      let k = 4*i;
+      for j in 0..4 {
+        buf[k + j] = xs[j];
+      }
+    }
+    buf
+  }
+
+  pub fn from_be_bytes(buf : &[u8; 4*N]) -> BigInt<N> {
+    let mut ws: [u32; N] = [0; N];
+    for i in 0..N {
+      let k = 4*i;
+      let mut xs: [u8; 4] = [0; 4];
+      for j in 0..4 { xs[j] = buf[k+j]; }       // stupid rust...
+      let w: u32 = u32::from_be_bytes(xs);
+      ws[N-1-i] = w;
+    }
+    BigInt(ws)
+  }
+
+  //------------------------------------
+
   pub fn truncate1(big : &BigInt<{N+1}>) -> BigInt<N> {
     // let small: [u32; N] = &big.limbs[0..N];
     let mut small: [u32; N] = [0; N];
@@ -77,6 +130,9 @@ impl<const N: usize> BigInt<N> {
     xs[0] = x;
     BigInt(xs)
   }
+
+  //------------------------------------
+  // comparison
 
   pub fn is_zero(big: &BigInt<N>) -> bool {
     let mut ok : bool = true;
@@ -132,6 +188,7 @@ impl<const N: usize> BigInt<N> {
   }
 
   //------------------------------------
+  // addition and subtraction
 
   #[inline(always)]
   #[unroll_for_loops]
@@ -235,6 +292,7 @@ impl<const N: usize> BigInt<N> {
   }
 
   //------------------------------------
+  // multiplication
 
   pub fn scale(scalar: u32, big2: &BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;

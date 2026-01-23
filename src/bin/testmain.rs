@@ -163,6 +163,26 @@ fn main() {
       BigInt::is_lt_prime(&c) );
 */
 
+  {
+    println!("");
+    println!("conversion to/from bytes");
+    let a  = FELT1;
+    let xs = Felt::to_le_bytes(&a);
+    let b  = Felt::unsafe_from_le_bytes(&xs);
+    println!("a = {}",a);
+    println!("b = {}",b);
+    println!("le = {:?}",xs);
+  }
+
+  {
+    let a  = FELT2;
+    let ys = Felt::to_be_bytes(&a);
+    let b  = Felt::unsafe_from_be_bytes(&ys);
+    println!("a = {}",a);
+    println!("b = {}",b);
+    println!("be = {:?}",ys);
+  }
+
   //----------------------------------------------------------------------------
 
 }

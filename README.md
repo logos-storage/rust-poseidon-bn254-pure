@@ -21,6 +21,6 @@ Currently, only Poseidon2 with `t=3` is implemented.
 - [ ] benchmark RISC-V cycles
 - [ ] add more Poseidon2 state widths (not just `t=3`)
 - [ ] implement `circomlib`-compatible Poseidon
+- [ ] add a test-suite; in particular, more complete testing of the field operations
 - [ ] add a 64 bit version
-- [ ] more complete testing of the field operations
 - [ ] further optimizations
