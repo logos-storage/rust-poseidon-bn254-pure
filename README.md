@@ -11,6 +11,10 @@ It's intended to be used on 32-bit platforms, eg. 32-bit RISC-V (rv32im)
 The algebra implementation is based on [`zikkurat-algebra`](https://github.com/faulhornlabs/zikkurat-algebra/)
 and [`staging-agda`](https://github.com/faulhornlabs/staging-agda/).
 
+### Status
+
+Currently, only Poseidon2 with `t=3` is implemented.
+
 ### TODO
 
 - [ ] optimize squaring to use less multiplications (?)
