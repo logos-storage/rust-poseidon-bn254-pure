@@ -147,6 +147,7 @@ fn main() {
   let elapsed = now.elapsed();
   println!("Elapsed: {:.3?}", elapsed);
 
+/*
   println!("");
   println!("sanity checking comparison with the prime");
   let one : Big = BigInt::from_u32(1);
@@ -160,6 +161,7 @@ fn main() {
       BigInt::is_lt_prime(&a) , 
       BigInt::is_lt_prime(&b) , 
       BigInt::is_lt_prime(&c) );
+*/
 
   //----------------------------------------------------------------------------
 

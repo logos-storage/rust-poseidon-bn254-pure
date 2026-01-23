@@ -11,12 +11,14 @@ pub type MontTriple = (Mont,Mont,Mont);
 
 //------------------------------------------------------------------------------
 
+#[inline(always)]
 fn sbox(x: Mont) -> Mont {
   let x2 = Mont::sqr(&x );
   let x4 = Mont::sqr(&x2);
   Mont::mul(&x,&x4)
 }
 
+#[inline(always)]
 fn add3(x: Mont, y: Mont, z: Mont) -> Mont {
   Mont::add(&Mont::add(&x,&y),&z)
 }
