@@ -11,6 +11,8 @@
 use std::fmt;
 use std::cmp::{Ordering,min};
 
+use unroll::unroll_for_loops;
+
 use crate::bn254::platform::*;
 
 //------------------------------------------------------------------------------
@@ -130,6 +132,7 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline(always)]
+  #[unroll_for_loops]
   pub fn addCarry(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
@@ -143,6 +146,7 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline(always)]
+  #[unroll_for_loops]
   pub fn subBorrow(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
@@ -178,6 +182,7 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline]
+  #[unroll_for_loops]
   pub fn scaleAdd(scalar: u32, vector: &BigInt<N>, add: &BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
@@ -190,6 +195,7 @@ impl<const N: usize> BigInt<N> {
     (big, c)
   }
 
+  // #[unroll_for_loops]
   pub fn multiply<const M: usize>(big1: &BigInt<N>, big2: &BigInt<M>) -> BigInt<{N+M}> {
     let mut product : [u32; N+M] = [0; N+M];
     let mut state   : [u32; N]   = [0; N];

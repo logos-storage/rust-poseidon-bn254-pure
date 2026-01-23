@@ -8,9 +8,10 @@ authors = ["Balazs Komuves"]
 default-run = "testmain"
 
 [dependencies]
+unroll = ">= 0.1.5"
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = ">= 0.8"
 
 [lib]
 bench = false

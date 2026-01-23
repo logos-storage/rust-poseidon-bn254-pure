@@ -8,6 +8,8 @@
 
 use std::fmt;
 
+use unroll::unroll_for_loops;
+
 use crate::bn254::platform::*;
 use crate::bn254::bigint::*;
 use crate::bn254::constant::*;
@@ -122,6 +124,8 @@ impl Mont {
 
   // we can abuse the fact that we know the prime number `p`,
   // for which `p < 2^254` so we won't overflow in the 17th word
+  
+  #[unroll_for_loops]
   fn redc(input: BigInt<16>) -> Big {
 
     let mut T: [u32; 16] = BigInt::unwrap(input);
