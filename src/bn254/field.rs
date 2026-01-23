@@ -20,15 +20,13 @@ use crate::bn254::montgomery::*;
 type Big = BigInt<8>;
 
 #[derive(Copy, Clone)]
-pub struct Felt {
-  pub big: Big
-}
+pub struct Felt(Big);
 
 //------------------------------------------------------------------------------
 
 impl fmt::Display for Felt {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    f.write_fmt(format_args!("{}",self.big))
+    f.write_fmt(format_args!("{}",self.0))
   }
 }
 
@@ -42,14 +40,19 @@ impl Felt {
 
 impl Felt {
 
+  #[inline(always)]
+  pub fn unwrap(felt: Felt) -> Big {
+    felt.0
+  }
+
   pub const fn unsafe_make( xs: [u32; 8] ) -> Felt {
-    Felt { big: BigInt::make(xs) }
+    Felt(BigInt::make(xs))
   }
 
   pub fn checked_make( xs: [u32; 8] ) -> Felt {
     let big: Big = BigInt::make(xs);
     if BigInt::is_lt(&big, &FIELD_PRIME) {
-      Felt { big: big }
+      Felt(big)
     }
     else {
       panic!("Felt::checked_make: not in range")
@@ -58,52 +61,52 @@ impl Felt {
 
   // convert to Montgomery representation
   pub fn to_mont(fld: &Felt) -> Mont {
-    Mont::unsafe_convert_from_big( &fld.big )
+    Mont::unsafe_convert_from_big( &fld.0 )
   }
 
   // convert from Montgomery representation
   pub fn from_mont(mont: &Mont) -> Felt {
-    Felt { big: Mont::convert_to_big(&mont) }
+    Felt(Mont::convert_to_big(&mont))
   }
 
   pub fn zero() -> Felt {
-    Felt { big: BigInt::zero() }
+    Felt(BigInt::zero())
   }
 
   pub fn from_u32(x: u32) -> Felt {
-    Felt { big: BigInt::from_u32(x) }
+    Felt(BigInt::from_u32(x))
   }
 
   pub fn is_equal(fld1: &Felt, fld2: &Felt) -> bool {
-    BigInt::is_equal(&fld1.big, &fld2.big)
+    BigInt::is_equal(&fld1.0, &fld2.0)
   }
 
   pub fn neg(fld: &Felt) -> Felt {
-    if BigInt::is_zero(&fld.big) {
+    if BigInt::is_zero(&fld.0) {
       Felt::zero()
     }
     else {
-      Felt { big: BigInt::sub(&FIELD_PRIME, &fld.big) }
+      Felt(BigInt::sub(&FIELD_PRIME, &fld.0))
     }
   }
 
   pub fn add(fld1: &Felt, fld2: &Felt) -> Felt {
-    let (big, carry) = BigInt::addCarry(&fld1.big, &fld2.big);
+    let (big, carry) = BigInt::addCarry(&fld1.0, &fld2.0);
     if carry || BigInt::is_ge(&big, &FIELD_PRIME) {
-      Felt { big: BigInt::sub(&big, &FIELD_PRIME) }
+      Felt(BigInt::sub(&big, &FIELD_PRIME))
     }
     else {
-      Felt { big: big }      
+      Felt(big)
     }
   }
 
   pub fn sub(fld1: &Felt, fld2: &Felt) -> Felt {
-    let (big, carry) = BigInt::subBorrow(&fld1.big, &fld2.big);
+    let (big, carry) = BigInt::subBorrow(&fld1.0, &fld2.0);
     if carry {
-      Felt { big: BigInt::add(&big, &FIELD_PRIME) }
+      Felt(BigInt::add(&big, &FIELD_PRIME))
     }
     else {
-      Felt { big: big }
+      Felt(big)
     }
   }
 

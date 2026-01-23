@@ -28,6 +28,11 @@ pub const MONT_R3 : Mont = Mont(BIG_R3);
 impl Mont {
 
   #[inline(always)]
+  pub fn unwrap(mont: Mont) -> Big {
+    mont.0
+  }
+
+  #[inline(always)]
   pub const fn unsafe_make( xs: [u32; 8] ) -> Mont {
     Mont(BigInt::make(xs))
   }

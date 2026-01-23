@@ -184,6 +184,7 @@ impl<const N: usize> BigInt<N> {
     (big, c)
   }
 
+  #[inline]
   pub fn scaleAdd(scalar: u32, big2: &BigInt<N>, add: &BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
