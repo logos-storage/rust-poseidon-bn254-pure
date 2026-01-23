@@ -147,6 +147,20 @@ fn main() {
   let elapsed = now.elapsed();
   println!("Elapsed: {:.3?}", elapsed);
 
+  println!("");
+  println!("sanity checking comparison with the prime");
+  let one : Big = BigInt::from_u32(1);
+  let a: Big = BigInt::sub(&FIELD_PRIME, &one);
+  let b: Big =              FIELD_PRIME       ; 
+  let c: Big = BigInt::add(&FIELD_PRIME, &one);
+  println!("a = {}", a );
+  println!("b = {}", b );
+  println!("c = {}", c );
+  println!("{} , {} , {}" , 
+      BigInt::is_lt_prime(&a) , 
+      BigInt::is_lt_prime(&b) , 
+      BigInt::is_lt_prime(&c) );
+
   //----------------------------------------------------------------------------
 
 }

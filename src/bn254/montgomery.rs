@@ -59,20 +59,17 @@ impl Mont {
 
   #[inline(always)]
   pub fn add(mont1: &Mont, mont2: &Mont) -> Mont {
-    let (big, carry) = BigInt::addCarry(&mont1.0, &mont2.0);
-    if carry || BigInt::is_ge(&big, &FIELD_PRIME) {
-      Mont(BigInt::sub(&big, &FIELD_PRIME))
-    }
-    else {
-      Mont(big)
-    }
+    let (A, _) = BigInt::addCarry(&mont1.0, &mont2.0);
+    let  B     = BigInt::subtract_prime_if_necessary(&A);
+    Mont(B) 
   }
 
   #[inline(always)]
   pub fn sub(mont1: &Mont, mont2: &Mont) -> Mont {
     let (big, carry) = BigInt::subBorrow(&mont1.0, &mont2.0);
     if carry {
-      Mont(BigInt::add(&big, &FIELD_PRIME))
+      let (corrected, _) = BigInt::add_prime(&big);
+      Mont(corrected)
     }
     else {
       Mont(big)
@@ -134,7 +131,7 @@ impl Mont {
       let mut carry: u32 = 0;
       let m: u32 = mulTrunc32( T[i] , MONT_Q );
       for j in 0..8 {
-        let (lo,hi) = mulAddAdd32( m, BigInt::unwrap(FIELD_PRIME)[j], carry, T[i+j] );
+        let (lo,hi) = mulAddAdd32( m, PRIME_ARRAY[j], carry, T[i+j] );
         T[i+j] = lo;
         carry  = hi;
       }
@@ -148,17 +145,9 @@ impl Mont {
     let mut S : [u32; 8] = [0; 8];
     for i in 0..8 { S[i] = T[8+i]; }
 
-    let A     :  Big       = BigInt::make(S);
-    let (B,c) : (Big,bool) = BigInt::subBorrow( &A , &FIELD_PRIME );
-
-    if c {
-      // `A - prime < 0` is equivalent to `A < prime` 
-      A
-    }
-    else {
-      // `A - prime >= 0` is equivalent to `A >= prime`
-      B
-    }
+    let A : Big = BigInt::make(S);
+    let B : Big = BigInt::subtract_prime_if_necessary(&A); 
+    B
   }
 
   pub fn sqr(mont: &Mont) -> Mont {
@@ -174,7 +163,7 @@ impl Mont {
   // this does conversion from the standard representation
   // we assume the input is in the range `[0..p-1]`
   pub fn unsafe_convert_from_big(input: &Big) -> Mont {
-    let mont: Mont = Mont(input.clone());
+    let mont: Mont = Mont(*input);
     Mont::mul( &mont , &MONT_R2 )
   }
 

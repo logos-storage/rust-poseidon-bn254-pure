@@ -6,6 +6,7 @@ use crate::bn254::bigint::*;
 
 type Big = BigInt<8>;
 
+pub const PRIME_ARRAY  : [u32; 8]  =               [ 0xf0000001 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 ];
 pub const PRIME_EXT    : BigInt<9> = BigInt::make( [ 0xf0000001 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 , 0x00000000 ] );
 pub const FIELD_PRIME  : Big       = BigInt::make( [ 0xf0000001 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 ] );
 pub const PRIME_PLUS_1 : Big       = BigInt::make( [ 0xf0000002 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 ] );

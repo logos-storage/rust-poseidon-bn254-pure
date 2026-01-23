@@ -51,7 +51,7 @@ impl Felt {
 
   pub fn checked_make( xs: [u32; 8] ) -> Felt {
     let big: Big = BigInt::make(xs);
-    if BigInt::is_lt(&big, &FIELD_PRIME) {
+    if BigInt::is_lt_prime(&big) {
       Felt(big)
     }
     else {
@@ -91,19 +91,16 @@ impl Felt {
   }
 
   pub fn add(fld1: &Felt, fld2: &Felt) -> Felt {
-    let (big, carry) = BigInt::addCarry(&fld1.0, &fld2.0);
-    if carry || BigInt::is_ge(&big, &FIELD_PRIME) {
-      Felt(BigInt::sub(&big, &FIELD_PRIME))
-    }
-    else {
-      Felt(big)
-    }
+    let (A, _) = BigInt::addCarry(&fld1.0, &fld2.0);
+    let  B     = BigInt::subtract_prime_if_necessary(&A);
+    Felt(B) 
   }
 
   pub fn sub(fld1: &Felt, fld2: &Felt) -> Felt {
     let (big, carry) = BigInt::subBorrow(&fld1.0, &fld2.0);
     if carry {
-      Felt(BigInt::add(&big, &FIELD_PRIME))
+      let (corrected, _) = BigInt::add_prime(&big);
+      Felt(corrected)
     }
     else {
       Felt(big)
