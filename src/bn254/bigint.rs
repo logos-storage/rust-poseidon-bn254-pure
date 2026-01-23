@@ -248,7 +248,7 @@ impl<const N: usize> BigInt<N> {
     (big, c)
   }
 
-  #[inline]
+  #[inline(always)]
   #[unroll_for_loops]
   pub fn scaleAdd(scalar: u32, vector: &BigInt<N>, add: &BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;
@@ -262,7 +262,8 @@ impl<const N: usize> BigInt<N> {
     (big, c)
   }
 
-  // #[unroll_for_loops]
+  #[inline(always)]
+  #[unroll_for_loops]
   pub fn multiply<const M: usize>(big1: &BigInt<N>, big2: &BigInt<M>) -> BigInt<{N+M}> {
     let mut product : [u32; N+M] = [0; N+M];
     let mut state   : [u32; N]   = [0; N];
@@ -279,15 +280,17 @@ impl<const N: usize> BigInt<N> {
     BigInt(product)
   }
 
+  #[inline(always)]
   pub fn mul(big1: &BigInt<N>, big2: &BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big1,big2)
   }
 
+  // TODO: optimize this?!
   pub fn sqr_naive(big: &BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big,big)
   }
 
-  // TODO: optimize this?!
+  #[inline(always)]
   pub fn sqr(big: &BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big,big)
   }
