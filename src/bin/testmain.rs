@@ -202,9 +202,21 @@ fn main() {
   println!("in dec = {}", Mont::to_decimal_string(&MONT1));
 */
 
+  let in1: Felt = Felt::from_u32(1);
+  let out1 = compress_1(in1);
+  println!("compress(1) = {}", Felt::to_decimal_string(&out1) );
+
   let in2: [Felt; 2] = [ Felt::from_u32(1) , Felt::from_u32(2) ];
-  let out2 = compress_felt_T3(in2);
+  let out2 = compress_2(in2);
   println!("compress(2) = {}", Felt::to_decimal_string(&out2) );
+
+  let in3: [Felt; 3] = [ Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) ];
+  let out3 = compress_3(in3);
+  println!("compress(3) = {}", Felt::to_decimal_string(&out3) );
+
+  let in4: [Felt; 4] = [ Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) , Felt::from_u32(4) ];
+  let out4 = compress_4(in4);
+  println!("compress(4) = {}", Felt::to_decimal_string(&out4) );
 
 }
 

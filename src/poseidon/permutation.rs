@@ -92,7 +92,7 @@ fn external_round<const T: usize>(rcs: &[Mont], input: [Mont; T], mtx: [Mont; T*
 }
 
 //------------------------------------------------------------------------------
-// T = 3
+// TODO: can we somehow unify the different T cases????
 
 /*
 // debugging
@@ -104,16 +104,20 @@ fn printRound(text: &str, round: usize, state: &[Mont]) {
 }
 */
 
-pub fn permute_mont_T3(input: [Mont; 3]) -> [Mont; 3] {
-  const T:  usize = 3;
+//--------------------------------------
+// T = 2
+
+pub fn permute_mont_T2(input: [Mont; 2]) -> [Mont; 2] {
+  const T:  usize = 2;
+
   const TT: usize = 2*T-1;
   const NP: usize = INTERNAL_ROUND_COUNT[T-2];
-  const C:  [Mont;  81] = t3::CONST_C;
-  const M:  [Mont;   9] = t3::CONST_M;
-  const P:  [Mont;   9] = t3::CONST_P;
-  const S:  [Mont; 285] = t3::CONST_S;
-  let mut state: [Mont; 3] = input;
-  // printRound("input", 0, &state); 
+  const C:  [Mont;  72] = t2::CONST_C;
+  const M:  [Mont;   4] = t2::CONST_M;
+  const P:  [Mont;   4] = t2::CONST_P;
+  const S:  [Mont; 168] = t2::CONST_S;
+
+  let mut state: [Mont; T] = input;
   for j in 0..T { 
     state[j] = Mont::add( &state[j] , &C[j] );
   }
@@ -137,7 +141,126 @@ pub fn permute_mont_T3(input: [Mont; 3]) -> [Mont; 3] {
   state
 }
 
-pub fn compress_felt_T3(input: [Felt;2]) -> Felt {
+//--------------------------------------
+
+pub fn permute_mont_T3(input: [Mont; 3]) -> [Mont; 3] {
+  const T:  usize = 3;
+
+  const TT: usize = 2*T-1;
+  const NP: usize = INTERNAL_ROUND_COUNT[T-2];
+  const C:  [Mont;  81] = t3::CONST_C;
+  const M:  [Mont;   9] = t3::CONST_M;
+  const P:  [Mont;   9] = t3::CONST_P;
+  const S:  [Mont; 285] = t3::CONST_S;
+
+  let mut state: [Mont; T] = input;
+  for j in 0..T { 
+    state[j] = Mont::add( &state[j] , &C[j] );
+  }
+  for i in 0..4  { 
+    let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
+    let mat = if i<3 { M } else { P };
+    state = external_round::<T>( rcs , state , mat ); 
+    // printRound("initial round", i, &state); 
+  }
+  for i in 0..NP { 
+    let rc: Mont = C[ i + 5*T ];
+    let scoeffs: &[Mont]  = &S[ (i*TT) .. ((i+1)*TT) ];
+    state = internal_round::<T>( rc , scoeffs , state );
+    // printRound("internal round", i, &state); 
+  }
+  for i in 4..8  { 
+    let rcs: &[Mont] = if i<7  { &C[ (NP + (i+1)*T) .. (NP + (i+2)*T) ] } else { &[Mont::zero(); T] };
+    state = external_round::<T>( rcs , state , M ); 
+    // printRound("final round", i, &state); 
+  }
+  state
+}
+
+//--------------------------------------
+
+pub fn permute_mont_T4(input: [Mont; 4]) -> [Mont; 4] {
+  const T:  usize = 4;
+
+  const TT: usize = 2*T-1;
+  const NP: usize = INTERNAL_ROUND_COUNT[T-2];
+  const C:  [Mont;  88] = t4::CONST_C;
+  const M:  [Mont;  16] = t4::CONST_M;
+  const P:  [Mont;  16] = t4::CONST_P;
+  const S:  [Mont; 392] = t4::CONST_S;
+
+  let mut state: [Mont; T] = input;
+  for j in 0..T { 
+    state[j] = Mont::add( &state[j] , &C[j] );
+  }
+  for i in 0..4  { 
+    let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
+    let mat = if i<3 { M } else { P };
+    state = external_round::<T>( rcs , state , mat ); 
+    // printRound("initial round", i, &state); 
+  }
+  for i in 0..NP { 
+    let rc: Mont = C[ i + 5*T ];
+    let scoeffs: &[Mont]  = &S[ (i*TT) .. ((i+1)*TT) ];
+    state = internal_round::<T>( rc , scoeffs , state );
+    // printRound("internal round", i, &state); 
+  }
+  for i in 4..8  { 
+    let rcs: &[Mont] = if i<7  { &C[ (NP + (i+1)*T) .. (NP + (i+2)*T) ] } else { &[Mont::zero(); T] };
+    state = external_round::<T>( rcs , state , M ); 
+    // printRound("final round", i, &state); 
+  }
+  state
+}
+
+//--------------------------------------
+
+pub fn permute_mont_T5(input: [Mont; 5]) -> [Mont; 5] {
+  const T:  usize = 5;
+
+  const TT: usize = 2*T-1;
+  const NP: usize = INTERNAL_ROUND_COUNT[T-2];
+  const C:  [Mont; 100] = t5::CONST_C;
+  const M:  [Mont;  25] = t5::CONST_M;
+  const P:  [Mont;  25] = t5::CONST_P;
+  const S:  [Mont; 540] = t5::CONST_S;
+
+  let mut state: [Mont; T] = input;
+  for j in 0..T { 
+    state[j] = Mont::add( &state[j] , &C[j] );
+  }
+  for i in 0..4  { 
+    let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
+    let mat = if i<3 { M } else { P };
+    state = external_round::<T>( rcs , state , mat ); 
+    // printRound("initial round", i, &state); 
+  }
+  for i in 0..NP { 
+    let rc: Mont = C[ i + 5*T ];
+    let scoeffs: &[Mont]  = &S[ (i*TT) .. ((i+1)*TT) ];
+    state = internal_round::<T>( rc , scoeffs , state );
+    // printRound("internal round", i, &state); 
+  }
+  for i in 4..8  { 
+    let rcs: &[Mont] = if i<7  { &C[ (NP + (i+1)*T) .. (NP + (i+2)*T) ] } else { &[Mont::zero(); T] };
+    state = external_round::<T>( rcs , state , M ); 
+    // printRound("final round", i, &state); 
+  }
+  state
+}
+
+//------------------------------------------------------------------------------
+
+pub fn compress_1(input: Felt) -> Felt {
+  let mut state: [Mont; 2] = 
+    [ Mont::zero()
+    , Felt::to_mont(&input)
+    ]; 
+  state = permute_mont_T2(state);
+  Felt::from_mont(&state[0])
+}
+
+pub fn compress_2(input: [Felt;2]) -> Felt {
   let mut state: [Mont; 3] = 
     [ Mont::zero()
     , Felt::to_mont(&input[0])
@@ -147,7 +270,27 @@ pub fn compress_felt_T3(input: [Felt;2]) -> Felt {
   Felt::from_mont(&state[0])
 }
 
-//------------------------------------------------------------------------------
+pub fn compress_3(input: [Felt;3]) -> Felt {
+  let mut state: [Mont; 4] = 
+    [ Mont::zero()
+    , Felt::to_mont(&input[0])
+    , Felt::to_mont(&input[1])
+    , Felt::to_mont(&input[2])
+    ]; 
+  state = permute_mont_T4(state);
+  Felt::from_mont(&state[0])
+}
 
+pub fn compress_4(input: [Felt;4]) -> Felt {
+  let mut state: [Mont; 5] = 
+    [ Mont::zero()
+    , Felt::to_mont(&input[0])
+    , Felt::to_mont(&input[1])
+    , Felt::to_mont(&input[2])
+    , Felt::to_mont(&input[3])
+    ]; 
+  state = permute_mont_T5(state);
+  Felt::from_mont(&state[0])
+}
 
 //------------------------------------------------------------------------------
