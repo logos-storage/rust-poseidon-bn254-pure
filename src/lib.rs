@@ -4,4 +4,5 @@
 #![feature(generic_const_exprs)]
 
 pub mod bn254;
+pub mod poseidon;
 pub mod poseidon2;

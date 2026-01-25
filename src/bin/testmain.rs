@@ -8,6 +8,8 @@ use rust_poseidon_bn254_pure::bn254::field::*;
 
 use rust_poseidon_bn254_pure::poseidon2::permutation::*;
 
+use rust_poseidon_bn254_pure::poseidon::permutation::*;
+
 //------------------------------------------------------------------------------
 
 type Big = BigInt<8>;
@@ -102,6 +104,7 @@ fn main() {
 
   //----------------------------------------------------------------------------
 
+/*
   println!("");
   println!("poseidon2 KAT:");
   println!("");
@@ -147,6 +150,10 @@ fn main() {
   let elapsed = now.elapsed();
   println!("Elapsed: {:.3?}", elapsed);
 
+*/
+
+  //----------------------------------------------------------------------------
+
 /*
   println!("");
   println!("sanity checking comparison with the prime");
@@ -163,6 +170,9 @@ fn main() {
       BigInt::is_lt_prime(&c) );
 */
 
+  //----------------------------------------------------------------------------
+
+/*
   {
     println!("");
     println!("conversion to/from bytes");
@@ -182,8 +192,19 @@ fn main() {
     println!("b = {}",b);
     println!("be = {:?}",ys);
   }
+*/
 
   //----------------------------------------------------------------------------
+
+/*
+  println!("underlying repr = {:?} ", MONT1);
+  println!("in hex = {}", MONT1);
+  println!("in dec = {}", Mont::to_decimal_string(&MONT1));
+*/
+
+  let in2: [Felt; 2] = [ Felt::from_u32(1) , Felt::from_u32(2) ];
+  let out2 = compress_felt_T3(in2);
+  println!("compress(2) = {}", Felt::to_decimal_string(&out2) );
 
 }
 
