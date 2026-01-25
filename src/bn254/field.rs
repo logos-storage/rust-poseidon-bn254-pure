@@ -93,6 +93,10 @@ impl Felt {
     Felt(Mont::convert_to_big(&mont))
   }
 
+  pub fn to_decimal_string(input: &Felt) -> String {
+    BigInt::to_decimal_string(&input.0)
+  }
+
   //------------------------------------
 
   pub fn zero() -> Felt {

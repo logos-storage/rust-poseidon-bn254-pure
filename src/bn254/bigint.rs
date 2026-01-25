@@ -100,7 +100,7 @@ impl<const N: usize> BigInt<N> {
     buf
   }
 
-  pub fn from_be_bytes(buf : &[u8; 4*N]) -> BigInt<N> {
+  pub fn from_be_bytes(buf: &[u8; 4*N]) -> BigInt<N> {
     let mut ws: [u32; N] = [0; N];
     for i in 0..N {
       let k = 4*i;
@@ -113,8 +113,38 @@ impl<const N: usize> BigInt<N> {
   }
 
   //------------------------------------
+  // decimal printing
 
-  pub fn truncate1(big : &BigInt<{N+1}>) -> BigInt<N> {
+  pub fn divmod_small(big: &BigInt<N>, modulus: u32) -> (BigInt<N> , u32) {
+    let u64_modulus: u64 = modulus as u64;
+    let mut carry: u32 = 0;
+    let mut qs: [u32; N] = [0; N];
+    for i in 0..N {
+      let x: u64 = ((carry as u64) << 32) + (big.0[N-1-i] as u64);
+      qs[N-1-i] = (x / u64_modulus) as u32;
+      carry     = (x % u64_modulus) as u32;
+    }
+    (BigInt(qs), carry)
+  }
+
+  pub fn to_decimal_string(input: &BigInt<N>) -> String {
+    let mut digits: Vec<u8> = Vec::new();
+    let mut big: BigInt<N> = input.clone();
+    while( !BigInt::is_zero(&big) ) {
+      let (q,r) = BigInt::divmod_small(&big, 10);
+      digits.push( 48 + (r as u8) );
+      big = q;
+    }
+    if digits.len() == 0 {
+      digits.push( 48 ); 
+    }
+    digits.reverse();
+    str::from_utf8(&digits).unwrap().to_string()
+  }
+
+  //------------------------------------
+
+  pub fn truncate1(big: &BigInt<{N+1}>) -> BigInt<N> {
     // let small: [u32; N] = &big.limbs[0..N];
     let mut small: [u32; N] = [0; N];
     for i in 0..N { small[i] = big.0[i]; }
@@ -341,6 +371,66 @@ impl<const N: usize> BigInt<N> {
   #[inline(always)]
   pub fn mul(big1: &BigInt<N>, big2: &BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big1,big2)
+  }
+
+  // x*y + z
+  #[inline(always)]
+  pub fn mulAdd(big1: &BigInt<N>, big2: &BigInt<N>, big3: &BigInt<N>) -> BigInt<{N+N}> {
+    // first compute the product
+    let mut product : [u32; N+N] = [0; N+N];
+    let mut state   : [u32; N]   = [0; N];
+    for j in 0..N {
+      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+      product[j] = scaled.0[0];
+      for i in 1..N { state[i-1] = scaled.0[i] }
+      state[N-1] = carry;
+    }
+    for i in 0..N { 
+      product[i+N] = state[i]
+    }
+  
+    // then add the third number
+    let mut carry: bool = false;  
+    for i in 0..N {
+      let (z,c)  = addCarry32( product[i] , big3.0[i] , carry );
+      carry      = c; 
+      product[i] = z;
+    }
+    // continue carrying
+    for i in N..(N+N) {
+      let (z,c)  = addCarry32( product[i] , 0 , carry );
+      carry      = c; 
+      product[i] = z;
+    }
+
+    BigInt(product)
+  }
+
+  // x*y + (z << 256)
+  #[inline(always)]
+  pub fn mulAddShifted(big1: &BigInt<N>, big2: &BigInt<N>, big3: &BigInt<N>) -> BigInt<{N+N}> {
+    // first compute the product
+    let mut product : [u32; N+N] = [0; N+N];
+    let mut state   : [u32; N]   = [0; N];
+    for j in 0..N {
+      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+      product[j] = scaled.0[0];
+      for i in 1..N { state[i-1] = scaled.0[i] }
+      state[N-1] = carry;
+    }
+    for i in 0..N { 
+      product[i+N] = state[i]
+    }
+  
+    // then add the third number, shifted
+    let mut carry: bool = false;  
+    for i in 0..N {
+      let (z,c)    = addCarry32( product[i+N] , big3.0[i] , carry );
+      carry        = c; 
+      product[i+N] = z;
+    }
+
+    BigInt(product)
   }
 
   // TODO: optimize this?!

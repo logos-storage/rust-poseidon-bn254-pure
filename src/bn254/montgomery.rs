@@ -43,6 +43,9 @@ impl Mont {
     BigInt::is_lt_prime(&mont.0)
   }
 
+  //------------------------------------
+  // to/from bytes
+
   // note: this exports the Montgomery representation!
   pub fn to_le_bytes(mont: &Mont) -> [u8; 32] {
     BigInt::to_le_bytes(&mont.0)
@@ -63,6 +66,10 @@ impl Mont {
   pub fn unsafe_from_be_bytes(buf: &[u8; 32]) -> Mont {
     let big = BigInt::from_be_bytes(buf);
     Mont(big)
+  }
+
+  pub fn to_decimal_string(input: &Mont) -> String {
+    BigInt::to_decimal_string(&Mont::convert_to_big(&input))
   }
 
   //------------------------------------
@@ -108,6 +115,9 @@ impl Mont {
   pub fn dbl(mont: &Mont) -> Mont {
     Mont::add(&mont, &mont)
   }
+
+  //------------------------------------
+  // reduction and multiplication
 
   // the Montgomery reduction algorithm
   // <https://en.wikipedia.org/wiki/Montgomery_modular_multiplication#Montgomery_arithmetic_on_multiprecision_integers>
@@ -187,6 +197,15 @@ impl Mont {
     let large = BigInt::mul(&mont1.0, &mont2.0);
     Mont(Mont::redc(large))
   }
+
+  // x*y + z
+  pub fn mulAdd(mont1: &Mont, mont2: &Mont, mont3: &Mont) -> Mont {
+    let large = BigInt::mulAddShifted(&mont1.0, &mont2.0, &mont3.0);
+    Mont(Mont::redc(large))
+  }
+
+  //------------------------------------
+  // conversions
 
   // this does conversion from the standard representation
   // we assume the input is in the range `[0..p-1]`
