@@ -1,4 +1,6 @@
 
+#![allow(unused)]
+
 use std::time::Instant;
 
 use rust_poseidon_bn254_pure::bn254::bigint::*;

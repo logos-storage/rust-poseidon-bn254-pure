@@ -70,26 +70,30 @@ Some approximate benchmark numbers below.
 
 On RV32IM (the primary target as of now), we have approximately the following cycle counts:
 
-Poseidon2:
+- Poseidon: about 900k cycles for a single `t=3` permutation
+- Poseidon2: about 350k cycles for a single `t=3` permutation
 
-- 350k cycles for a single `t=3` permutation
+Note: Poseidon is about 2.5x slower, simply because there are about 2.5x more 
+field multiplications involved (which absolutely dominate the runtime).
 
 #### Modern CPUs
 
-On modern 64-bit CPU-s, the 64-bit version is preferred (TODO: implement it).
+On modern 64-bit CPU-s, the 64-bit version would be preferred (TODO: implement it).
 
-32 bit version, running on an M2 macbook pro:
+32 bit version, running on an M2 macbook pro (single threaded):
 
-- 155 msec for 10k `t=3` permutations
+- Poseidon:  320 msec for 10,000 `t=3` permutations
+- Poseidon2: 140 msec for 10,000 `t=3` permutations
 
 ### TODO
 
+- [ ] clean up the code and make it more idiomatic
 - [ ] optimize squaring to use less multiplications (?)
-- [ ] benchmark RISC-V cycles
+- [x] benchmark RISC-V cycles
 - [ ] add more Poseidon2 state widths (not just `t=3`)
 - [x] implement `circomlib`-compatible Poseidon
 - [ ] add a proper test-suite; in particular, more complete testing of the field operations
 - [ ] add a 64 bit version
-- [ ] further optimizations
+- [ ] further optimizations (?)
 - [ ] implement the sponge construction
 
