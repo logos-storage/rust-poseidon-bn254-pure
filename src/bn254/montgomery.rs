@@ -7,6 +7,7 @@
 #![allow(non_snake_case)]
 
 use std::fmt;
+use std::ops::{Neg,Add,Sub,Mul};
 
 use unroll::unroll_for_loops;
 
@@ -18,7 +19,7 @@ use crate::bn254::constant::*;
 
 type Big = BigInt<8>;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Mont(Big);
 
 pub const MONT_R1 : Mont = Mont(BIG_R1);
@@ -26,11 +27,55 @@ pub const MONT_R2 : Mont = Mont(BIG_R2);
 pub const MONT_R3 : Mont = Mont(BIG_R3);
 
 //------------------------------------------------------------------------------
+// display traits
+
+// prints the internal representation
+impl fmt::Debug for Mont {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let _   = f.write_str("[");
+    let res = f.write_fmt(format_args!("{}",self.0));
+    let _   = f.write_str("]");
+    res
+  }
+}
+
+// prints the standard representation
+impl fmt::Display for Mont {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let big: Big = Mont::convert_to_big(&self);
+    f.write_fmt(format_args!("{}",big))
+  }
+}
+
+//------------------------------------------------------------------------------
+// standard numeric traits
+
+impl Neg for Mont {
+  type Output = Self;
+  fn neg(self) -> Self { Mont::neg(&self) }
+}
+
+impl Add for Mont {
+  type Output = Self;
+  fn add(self, other: Self) -> Self { Mont::add(&self,&other) }
+}
+
+impl Sub for Mont {
+  type Output = Self;
+  fn sub(self, other: Self) -> Self { Mont::sub(&self,&other) }
+}
+
+impl Mul for Mont {
+  type Output = Self;
+  fn mul(self, other: Self) -> Self { Mont::mul(&self,&other) }
+}
+
+//------------------------------------------------------------------------------
 
 impl Mont {
 
   #[inline(always)]
-  pub fn unwrap(mont: Mont) -> Big {
+  pub fn underlying_bigint(mont: Mont) -> Big {
     mont.0
   }
 
@@ -79,9 +124,11 @@ impl Mont {
     Mont(BigInt::zero())
   }
 
+/*
   pub fn is_equal(mont1: &Mont, mont2: &Mont) -> bool {
     BigInt::is_equal(&mont1.0, &mont2.0)
   }
+*/
 
   pub fn neg(mont: &Mont) -> Mont {
     if BigInt::is_zero(&mont.0) {
@@ -124,13 +171,14 @@ impl Mont {
   fn redc_safe(input: BigInt<16>) -> Big {
 
     let mut T: [u32; 17] = [0; 17];
-    for i in 0..16 { T[i] = BigInt::unwrap(input)[i]; }
+    let big = BigInt::to_limbs(input);
+    for i in 0..16 { T[i] = big[i]; }
 
     for i in 0..8 {
       let mut carry: u32 = 0;
       let m: u32 = mulTrunc32( T[i] , MONT_Q );
       for j in 0..8 {
-        let (lo,hi) = mulAddAdd32( m, BigInt::unwrap(FIELD_PRIME)[j], carry, T[i+j] );
+        let (lo,hi) = mulAddAdd32( m, BigInt::to_limbs(FIELD_PRIME)[j], carry, T[i+j] );
         T[i+j] = lo;
         carry  = hi;
       }
@@ -163,7 +211,7 @@ impl Mont {
   #[unroll_for_loops]
   fn redc(input: BigInt<16>) -> Big {
 
-    let mut T: [u32; 16] = BigInt::unwrap(input);
+    let mut T: [u32; 16] = BigInt::to_limbs(input);
 
     for i in 0..8 {
       let mut carry: u32 = 0;
@@ -217,7 +265,7 @@ impl Mont {
   // this does conversion to the standard representation
   pub fn convert_to_big(mont: &Mont) -> Big {
     let mut tmp: [u32; 16] = [0; 16];
-    for i in 0..8 { tmp[i] = BigInt::unwrap(mont.0)[i] } 
+    for i in 0..8 { tmp[i] = BigInt::to_limbs(mont.0)[i] } 
     Mont::redc( BigInt::make(tmp) )
   }
 
@@ -231,26 +279,7 @@ impl Mont {
 }
 
 //------------------------------------------------------------------------------
-
-// prints the internal representation
-impl fmt::Debug for Mont {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let _   = f.write_str("[");
-    let res = f.write_fmt(format_args!("{}",self.0));
-    let _   = f.write_str("]");
-    res
-  }
-}
-
-// prints the standard representation
-impl fmt::Display for Mont {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let big: Big = Mont::convert_to_big(&self);
-    f.write_fmt(format_args!("{}",big))
-  }
-}
-
-//------------------------------------------------------------------------------
+// debug printing
 
 impl Mont {
   pub fn print_internal(s: &str, A: &Mont) {

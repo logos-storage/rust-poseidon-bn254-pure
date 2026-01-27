@@ -10,6 +10,7 @@
 
 use std::fmt;
 use std::cmp::{Ordering,min};
+use std::ops::{Add,Sub};
 
 use unroll::unroll_for_loops;
 
@@ -18,7 +19,7 @@ use crate::bn254::constant::{PRIME_ARRAY};
 
 //------------------------------------------------------------------------------
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct BigInt<const N: usize>([u32; N]);
 
 #[inline(always)]
@@ -30,6 +31,7 @@ pub type BigInt256 = BigInt<8>;
 pub type BigInt512 = BigInt<16>;
 
 //------------------------------------------------------------------------------
+// display traits
 
 impl<const N: usize> fmt::Display for BigInt<N> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -48,18 +50,49 @@ impl<const N: usize> BigInt<N> {
 }
 
 //------------------------------------------------------------------------------
+// standard numeric traits
+
+impl<const N: usize> Add for BigInt<N> {
+  type Output = Self;
+  fn add(self, other: Self) -> Self { BigInt::add(&self,&other) }
+}
+
+impl<const N: usize> Sub for BigInt<N> {
+  type Output = Self;
+  fn sub(self, other: Self) -> Self { BigInt::sub(&self,&other) }
+}
+
+impl<const N: usize> PartialOrd for BigInt<N> {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(BigInt::cmp(&self,&other)) }
+}
+
+impl<const N: usize> Ord for BigInt<N> {
+  fn cmp(&self, other: &Self) -> Ordering { BigInt::cmp(&self,&other) }
+}
+
+//------------------------------------------------------------------------------
+// conversion traits
+
+impl<const N: usize> From<[u32; N]> for BigInt<N> {
+  fn from(limbs: [u32; N]) -> Self { BigInt(limbs) }
+}
+
+impl<const N: usize> Into<[u32; N]> for BigInt<N> {
+  fn into(self: Self) -> [u32; N] { self.0 }
+}
+
+//------------------------------------------------------------------------------
 
 impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
-  pub fn unwrap(big: BigInt<N>) -> [u32; N] {
-    big.0
-  }
+  pub const fn to_limbs(big: BigInt<N>) -> [u32; N] { big.0 }
+
+  #[inline(always)]
+  pub const fn from_limbs(limbs: [u32; N]) -> BigInt<N> { BigInt(limbs) }
  
   #[inline(always)]
-  pub const fn make(ls: [u32; N]) -> BigInt<N> { 
-    BigInt(ls)
-  }
+  pub const fn make(ls: [u32; N]) -> BigInt<N> { BigInt(ls) }
 
   //------------------------------------
   // conversion to/from bytes
@@ -67,11 +100,8 @@ impl<const N: usize> BigInt<N> {
   pub fn to_le_bytes(big: &BigInt<N>) -> [u8; 4*N] {
     let mut buf : [u8; 4*N] = [0; 4*N];
     for i in 0..N {
-      let xs: [u8; 4] = big.0[i].to_le_bytes();
       let k = 4*i;
-      for j in 0..4 {
-        buf[k + j] = xs[j];
-      }
+      buf[k..k+4].copy_from_slice(&big.0[i].to_le_bytes());
     }
     buf
   }
@@ -91,11 +121,8 @@ impl<const N: usize> BigInt<N> {
   pub fn to_be_bytes(big: &BigInt<N>) -> [u8; 4*N] {
     let mut buf : [u8; 4*N] = [0; 4*N];
     for i in 0..N {
-      let xs: [u8; 4] = big.0[N-1-i].to_be_bytes();
       let k = 4*i;
-      for j in 0..4 {
-        buf[k + j] = xs[j];
-      }
+      buf[k..k+4].copy_from_slice(&big.0[N-1-i].to_be_bytes());
     }
     buf
   }
@@ -105,7 +132,7 @@ impl<const N: usize> BigInt<N> {
     for i in 0..N {
       let k = 4*i;
       let mut xs: [u8; 4] = [0; 4];
-      for j in 0..4 { xs[j] = buf[k+j]; }       // stupid rust...
+      for j in 0..4 { xs[j] = buf[k+j]; }   
       let w: u32 = u32::from_be_bytes(xs);
       ws[N-1-i] = w;
     }
@@ -175,6 +202,7 @@ impl<const N: usize> BigInt<N> {
     ok
   }
 
+/*
   pub fn is_equal(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
     let mut ok : bool = true;
     for i in 0..N {
@@ -185,6 +213,7 @@ impl<const N: usize> BigInt<N> {
     }
     ok
   }
+*/
 
   pub fn cmp(big1: &BigInt<N>, big2: &BigInt<N>) -> Ordering {
     let mut res : Ordering = Ordering::Equal;
@@ -201,6 +230,7 @@ impl<const N: usize> BigInt<N> {
     res
   }
 
+/*
   pub fn is_lt(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
     BigInt::cmp(&big1, &big2) == Ordering::Less
   }
@@ -216,6 +246,7 @@ impl<const N: usize> BigInt<N> {
   pub fn is_ge(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
     !BigInt::is_lt(&big1, &big2)
   }
+*/
 
   //------------------------------------
   // addition and subtraction

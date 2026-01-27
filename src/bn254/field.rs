@@ -10,6 +10,7 @@
 #![allow(non_snake_case)]
 
 use std::fmt;
+use std::ops::{Neg,Add,Sub,Mul};
 
 use crate::bn254::bigint::*;
 use crate::bn254::constant::*;
@@ -19,10 +20,11 @@ use crate::bn254::montgomery::*;
 
 type Big = BigInt<8>;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Felt(Big);
 
 //------------------------------------------------------------------------------
+// display traits
 
 impl fmt::Display for Felt {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -37,20 +39,57 @@ impl Felt {
 }
 
 //------------------------------------------------------------------------------
+// standard numeric traits
+
+impl Neg for Felt {
+  type Output = Self;
+  fn neg(self) -> Self { Felt::neg(&self) }
+}
+
+impl Add for Felt {
+  type Output = Self;
+  fn add(self, other: Self) -> Self { Felt::add(&self,&other) }
+}
+
+impl Sub for Felt {
+  type Output = Self;
+  fn sub(self, other: Self) -> Self { Felt::sub(&self,&other) }
+}
+
+impl Mul for Felt {
+  type Output = Self;
+  fn mul(self, other: Self) -> Self { Felt::mul(&self,&other) }
+}
+
+//------------------------------------------------------------------------------
+// conversion traits
+
+impl From<Mont> for Felt {
+  fn from(mont: Mont) -> Self { Felt::from_mont(&mont) }
+}
+
+impl Into<Mont> for Felt {
+  fn into(self: Self) -> Mont { Felt::to_mont(&self) }
+}
+
+// note: we dont implement `From<BigInt<8>>` as it's unsafe, 
+// and we don't have a "safe" (modulo p) implementation yet
+
+impl Into<BigInt<8>> for Felt {
+  fn into(self: Self) -> BigInt<8> { Felt::to_bigint(self) }
+}
+
+//------------------------------------------------------------------------------
 
 impl Felt {
 
   #[inline(always)]
-  pub fn unwrap(felt: Felt) -> Big {
+  pub fn to_bigint(felt: Felt) -> Big {
     felt.0
   }
 
   pub const fn unsafe_make( xs: [u32; 8] ) -> Felt {
-    Felt(BigInt::make(xs))
-  }
-
-  pub fn is_valid(felt: &Felt) -> bool {
-    BigInt::is_lt_prime(&felt.0)
+    Felt(BigInt::from_limbs(xs))
   }
 
   pub fn checked_make( xs: [u32; 8] ) -> Felt {
@@ -63,6 +102,10 @@ impl Felt {
     }
   }
 
+  pub fn is_valid(felt: &Felt) -> bool {
+    BigInt::is_lt_prime(&felt.0)
+  }
+
   //------------------------------------
 
   pub fn to_le_bytes(felt: &Felt) -> [u8; 32] {
@@ -70,8 +113,7 @@ impl Felt {
   }
 
   pub fn unsafe_from_le_bytes(buf: &[u8; 32]) -> Felt {
-    let big = BigInt::from_le_bytes(buf);
-    Felt(big)
+    Felt(BigInt::from_le_bytes(buf))
   }
 
   pub fn to_be_bytes(felt: &Felt) -> [u8; 32] {
@@ -79,8 +121,7 @@ impl Felt {
   }
 
   pub fn unsafe_from_be_bytes(buf: &[u8; 32]) -> Felt {
-    let big = BigInt::from_be_bytes(buf);
-    Felt(big)
+    Felt(BigInt::from_be_bytes(buf))
   }
 
   // convert to Montgomery representation
@@ -107,9 +148,11 @@ impl Felt {
     Felt(BigInt::from_u32(x))
   }
 
+/*
   pub fn is_equal(fld1: &Felt, fld2: &Felt) -> bool {
     BigInt::is_equal(&fld1.0, &fld2.0)
   }
+*/
 
   pub fn neg(fld: &Felt) -> Felt {
     if BigInt::is_zero(&fld.0) {
