@@ -71,6 +71,18 @@ impl Mul for Mont {
 }
 
 //------------------------------------------------------------------------------
+// small values
+
+impl Default for Mont {
+  fn default() -> Self { Mont(BigInt::zero()) }
+}
+
+impl From<u32> for Mont {
+  fn from(x: u32) -> Self { Self::convert_from_u32(x) }
+}
+
+//------------------------------------------------------------------------------
+// internal implementations
 
 impl Mont {
 
@@ -124,12 +136,6 @@ impl Mont {
     Mont(BigInt::zero())
   }
 
-/*
-  pub fn is_equal(mont1: &Mont, mont2: &Mont) -> bool {
-    BigInt::is_equal(&mont1.0, &mont2.0)
-  }
-*/
-
   pub fn neg(mont: &Mont) -> Mont {
     if BigInt::is_zero(&mont.0) {
       Mont::zero()
@@ -166,6 +172,7 @@ impl Mont {
   //------------------------------------
   // reduction and multiplication
 
+/*
   // the Montgomery reduction algorithm
   // <https://en.wikipedia.org/wiki/Montgomery_modular_multiplication#Montgomery_arithmetic_on_multiprecision_integers>
   fn redc_safe(input: BigInt<16>) -> Big {
@@ -204,10 +211,11 @@ impl Mont {
       BigInt::truncate1(&B)
     }
   }
+*/
 
   // we can abuse the fact that we know the prime number `p`,
   // for which `p < 2^254` so we won't overflow in the 17th word
-  
+
   #[unroll_for_loops]
   fn redc(input: BigInt<16>) -> Big {
 
@@ -253,7 +261,7 @@ impl Mont {
   }
 
   //------------------------------------
-  // conversions
+  // conversions to/from standard bigint representation
 
   // this does conversion from the standard representation
   // we assume the input is in the range `[0..p-1]`

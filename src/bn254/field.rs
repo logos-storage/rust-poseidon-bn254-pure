@@ -80,6 +80,18 @@ impl Into<BigInt<8>> for Felt {
 }
 
 //------------------------------------------------------------------------------
+// small values
+
+impl Default for Felt {
+  fn default() -> Self { Felt(BigInt::zero()) }
+}
+
+impl From<u32> for Felt {
+  fn from(x: u32) -> Self { Self::from_u32(x) }
+}
+
+//------------------------------------------------------------------------------
+// internal implementations
 
 impl Felt {
 
@@ -147,12 +159,6 @@ impl Felt {
   pub fn from_u32(x: u32) -> Felt {
     Felt(BigInt::from_u32(x))
   }
-
-/*
-  pub fn is_equal(fld1: &Felt, fld2: &Felt) -> bool {
-    BigInt::is_equal(&fld1.0, &fld2.0)
-  }
-*/
 
   pub fn neg(fld: &Felt) -> Felt {
     if BigInt::is_zero(&fld.0) {

@@ -22,11 +22,6 @@ use crate::bn254::constant::{PRIME_ARRAY};
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct BigInt<const N: usize>([u32; N]);
 
-#[inline(always)]
-pub fn mkBigInt<const N: usize>(ls: [u32; N]) -> BigInt<N> {
-  BigInt(ls)
-}
-
 pub type BigInt256 = BigInt<8>;
 pub type BigInt512 = BigInt<16>;
 
@@ -35,10 +30,10 @@ pub type BigInt512 = BigInt<16>;
 
 impl<const N: usize> fmt::Display for BigInt<N> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let _ = f.write_str("0x");
-    for i in 0..N {
-      let _ = f.write_fmt(format_args!("{:08x}",self.0[N-1-i]));
-    }   
+    write!(f, "0x")?;
+    for i in (0..N).rev() {
+      write!(f, "{:08x}", self.0[i])?;
+    }
     Ok(())
   }
 }
@@ -82,6 +77,18 @@ impl<const N: usize> Into<[u32; N]> for BigInt<N> {
 }
 
 //------------------------------------------------------------------------------
+// small values
+
+impl<const N: usize> Default for BigInt<N> {
+  fn default() -> Self { Self([0; N]) }
+}
+
+impl<const N: usize> From<u32> for BigInt<N> {
+  fn from(x: u32) -> Self { Self::from_u32(x) }
+}
+
+//------------------------------------------------------------------------------
+// internal implementations
 
 impl<const N: usize> BigInt<N> {
 
@@ -192,28 +199,8 @@ impl<const N: usize> BigInt<N> {
   // comparison
 
   pub fn is_zero(big: &BigInt<N>) -> bool {
-    let mut ok : bool = true;
-    for i in 0..N {
-      if big.0[i] != 0 {
-        ok = false;
-        break;
-      }
-    }
-    ok
+    big.0.iter().all(|&x| x == 0)
   }
-
-/*
-  pub fn is_equal(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
-    let mut ok : bool = true;
-    for i in 0..N {
-      if big1.0[i] != big2.0[i] {
-        ok = false;
-        break;
-      }
-    }
-    ok
-  }
-*/
 
   pub fn cmp(big1: &BigInt<N>, big2: &BigInt<N>) -> Ordering {
     let mut res : Ordering = Ordering::Equal;
@@ -229,24 +216,6 @@ impl<const N: usize> BigInt<N> {
     }
     res
   }
-
-/*
-  pub fn is_lt(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
-    BigInt::cmp(&big1, &big2) == Ordering::Less
-  }
-
-  pub fn is_gt(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
-    BigInt::cmp(&big1, &big2) == Ordering::Greater
-  }
-
-  pub fn is_le(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
-    !BigInt::is_gt(&big1, &big2)
-  }
-
-  pub fn is_ge(big1: &BigInt<N>, big2: &BigInt<N>) -> bool {
-    !BigInt::is_lt(&big1, &big2)
-  }
-*/
 
   //------------------------------------
   // addition and subtraction
