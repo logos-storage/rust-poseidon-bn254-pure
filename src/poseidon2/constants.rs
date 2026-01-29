@@ -110,20 +110,20 @@ pub const FINAL_MONT: [Mont; 12] =
 
 //------------------------------------------------------------------------------
 
-pub const fn get_initial_RCs(r: usize) -> (Mont, Mont, Mont) {
+pub const fn get_initial_RCs(r: usize) -> [Mont; 3] {
   let j = 3*r;
   let x: Mont = INITIAL_MONT[j  ];
   let y: Mont = INITIAL_MONT[j+1];
   let z: Mont = INITIAL_MONT[j+2];
-  (x,y,z)
+  [x,y,z]
 }
 
-pub const fn get_final_RCs(r: usize) -> (Mont, Mont, Mont) {
+pub const fn get_final_RCs(r: usize) -> [Mont; 3] {
   let j = 3*r;
   let x: Mont = FINAL_MONT[j  ];
   let y: Mont = FINAL_MONT[j+1];
   let z: Mont = FINAL_MONT[j+2];
-  (x,y,z)
+  [x,y,z]
 }
 
 //------------------------------------------------------------------------------

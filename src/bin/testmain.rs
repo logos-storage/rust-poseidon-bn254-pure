@@ -110,12 +110,12 @@ fn main() {
   println!("poseidon2 KAT:");
   println!("");
 
-  let input  = ( Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) );
+  let input  = [ Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) ];
   let output = permute_felt( input );
 
-  println!("x  = {}", input.0 );
-  println!("y  = {}", input.1 );
-  println!("z  = {}", input.2 );
+  println!("x  = {}", input[0] );
+  println!("y  = {}", input[1] );
+  println!("z  = {}", input[2] );
 
   println!("~> ");
 
@@ -125,16 +125,16 @@ fn main() {
   // y' = 0x13f731d6ffbad391be22d2ac364151849e19fa38eced4e761bcd21dbdc600288 
   // z' = 0x1433e2c8f68382c447c5c14b8b3df7cbfd9273dd655fe52f1357c27150da786f 
   //
-  println!("x' = {}", output.0 );
-  println!("y' = {}", output.1 );
-  println!("z' = {}", output.2 );
+  println!("x' = {}", output[0] );
+  println!("y' = {}", output[1] );
+  println!("z' = {}", output[2] );
 
   println!("");
   println!("poseidon2 iterated 10,000 times:");
   println!("");
 
   let now = Instant::now();
-  let mut state: (Felt,Felt,Felt) = input.clone(); 
+  let mut state: [Felt; 3] = input.clone(); 
   for _i in 0..10000 {
     state = permute_felt(state);
   }
@@ -145,9 +145,9 @@ fn main() {
   // y'' = 0x138d88ea0ece1c9618254fe2146a6120080e16128467187bf1448e80f31eee3f
   // z'' = 0x1e51d60083aa3e8fa189e1c72844c5e09225f5977a834f53b471bf0de0dd59eb
   //
-  println!("x'' = {}", state.0 );
-  println!("y'' = {}", state.1 );
-  println!("z'' = {}", state.2 );
+  println!("x'' = {}", state[0] );
+  println!("y'' = {}", state[1] );
+  println!("z'' = {}", state[2] );
   let elapsed = now.elapsed();
   println!("Elapsed: {:.3?}", elapsed);
 

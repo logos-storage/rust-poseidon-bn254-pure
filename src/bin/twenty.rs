@@ -6,18 +6,18 @@ fn main() {
 
   println!("iterating Poseidon2 twenty times");
 
-  let input  = ( Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) );
+  let input  = [ Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) ];
 
-  println!("x  = {}", input.0 );
-  println!("y  = {}", input.1 );
-  println!("z  = {}", input.2 );
+  println!("x  = {}", input[0] );
+  println!("y  = {}", input[1] );
+  println!("z  = {}", input[2] );
 
-  let mut state: (Felt,Felt,Felt) = input.clone(); 
+  let mut state: [Felt; 3] = input.clone(); 
   for _i in 0..20 {
     state = permute_felt(state);
   }
-  println!("x' = {}", state.0 );
-  println!("y' = {}", state.1 );
-  println!("z' = {}", state.2 );
+  println!("x' = {}", state[0] );
+  println!("y' = {}", state[1] );
+  println!("z' = {}", state[2] );
 
 }

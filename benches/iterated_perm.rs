@@ -9,31 +9,24 @@ use rust_poseidon_bn254_pure::poseidon2;
 
 //------------------------------------------------------------------------------
 
-type Triple = (Felt,Felt,Felt);
+type Triple = [Felt; 3];
 
 fn initial_triple() -> Triple {
-  ( Felt::from_u32(0)
-  , Felt::from_u32(1)
-  , Felt::from_u32(2)
-  )
-}
-
-fn initial_vector() -> [Felt; 3] {
   [ Felt::from_u32(0)
   , Felt::from_u32(1)
   , Felt::from_u32(2)
   ]
 }
 
-pub fn poseidon1_permute_felt(input: [Felt; 3]) -> [Felt; 3] {
+pub fn poseidon1_permute_felt(input: Triple) -> Triple {
   let mut state: [Mont; 3] = Felt::to_mont_vec(input);
   state = poseidon::permutation::permute_mont_T3(state);
-  let out: [Felt; 3] = Felt::from_mont_vec(state);
+  let out: Triple = Felt::from_mont_vec(state);
   out
 }
 
-fn iterate_poseidon1(n: usize) -> [Felt; 3] {
-  let mut state: [Felt; 3] = initial_vector();
+fn iterate_poseidon1(n: usize) -> Triple {
+  let mut state: Triple = initial_triple();
   for _i in 0..n {
     state = poseidon1_permute_felt(state);
   }
