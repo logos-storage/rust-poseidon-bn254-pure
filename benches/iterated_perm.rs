@@ -26,17 +26,9 @@ fn initial_vector() -> [Felt; 3] {
 }
 
 pub fn poseidon1_permute_felt(input: [Felt; 3]) -> [Felt; 3] {
-  let mut state: [Mont; 3] = 
-    [ Felt::to_mont(input[0])
-    , Felt::to_mont(input[1])
-    , Felt::to_mont(input[2])
-    ];
+  let mut state: [Mont; 3] = Felt::to_mont_vec(input);
   state = poseidon::permutation::permute_mont_T3(state);
-  let out: [Felt; 3] = 
-    [ Felt::from_mont(state[0])
-    , Felt::from_mont(state[1])
-    , Felt::from_mont(state[2])
-    ];
+  let out: [Felt; 3] = Felt::from_mont_vec(state);
   out
 }
 

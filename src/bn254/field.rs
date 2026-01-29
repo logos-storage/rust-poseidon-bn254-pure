@@ -118,7 +118,12 @@ impl Felt {
     BigInt::is_lt_prime(felt.0)
   }
 
+  pub fn to_decimal_string(input: Felt) -> String {
+    BigInt::to_decimal_string(input.0)
+  }
+
   //------------------------------------
+  // conversion to/from bytes
 
   pub fn to_le_bytes(felt: Felt) -> [u8; 32] {
     BigInt::to_le_bytes(felt.0)
@@ -136,9 +141,12 @@ impl Felt {
     Felt(BigInt::from_be_bytes(buf))
   }
 
+  //------------------------------------
+  // conversion to/from Montgomery
+
   // convert to Montgomery representation
-  pub fn to_mont(fld: Felt) -> Mont {
-    Mont::unsafe_convert_from_big( fld.0 )
+  pub fn to_mont(felt: Felt) -> Mont {
+    Mont::unsafe_convert_from_big( felt.0 )
   }
 
   // convert from Montgomery representation
@@ -146,12 +154,17 @@ impl Felt {
     Felt(Mont::convert_to_big(mont))
   }
 
-  pub fn to_decimal_string(input: Felt) -> String {
-    BigInt::to_decimal_string(input.0)
+  pub fn to_mont_vec<const T: usize>(felts: [Felt; T]) -> [Mont; T] {
+    felts.map( |x| Felt::to_mont(x) )
+  }
+
+  pub fn from_mont_vec<const T: usize>(monts: [Mont;T] ) -> [Felt; T] {
+    monts.map( |x| Felt::from_mont(x) )
   }
 
   //------------------------------------
-
+  // basic operations
+  
   pub fn zero() -> Felt {
     Felt(BigInt::zero())
   }
