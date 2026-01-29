@@ -259,69 +259,6 @@ impl<const N: usize> BigInt<N> {
   }
 
   //------------------------------------
-  // specialize to the prime number
-
-  #[inline(always)]
-  #[unroll_for_loops]
-  pub fn is_lt_prime(big: BigInt<N>) -> bool {
-    let mut less: bool = false;
-    for i in (0..N).rev() {
-      if big.0[i] < PRIME_ARRAY[i] {
-        less = true;
-        break;
-      }
-      if big.0[i] > PRIME_ARRAY[i] {
-        break;
-      }
-    }
-    less
-  }
-
-  #[inline(always)]
-  pub fn is_ge_prime(big: BigInt<N>) -> bool {
-    !BigInt::is_lt_prime(big)
-  }
-
-  #[inline(always)]
-  #[unroll_for_loops]
-  pub fn add_prime(big: BigInt<N>) -> (BigInt<N>, bool) {
-    let mut c  : bool = false;  
-    let mut zs : [u32; N] = [0; N];
-    for i in 0..N {
-      let (z,cout) = addCarry32( big.0[i] , PRIME_ARRAY[i] , c );
-      zs[i] = z;
-      c = cout;
-    }
-    let big: BigInt<N> = BigInt(zs);
-    (big, c)
-  }
-
-  #[inline(always)]
-  #[unroll_for_loops]
-  pub fn subtract_prime(big: BigInt<N>) -> (BigInt<N>, bool) {
-    let mut c  : bool = false;  
-    let mut zs : [u32; N] = [0; N];
-    for i in 0..N {
-      let (z,cout) = subBorrow32( big.0[i] , PRIME_ARRAY[i] , c );
-      zs[i] = z;
-      c = cout;
-    }
-    let big: BigInt<N> = BigInt(zs); 
-    (big, c)
-  }
-
-  #[inline(always)]
-  pub fn subtract_prime_if_necessary(big: BigInt<N>) -> BigInt<N> {
-    if BigInt::is_lt_prime(big) {
-      big
-    }
-    else {
-      let (corrected, _) = BigInt::subtract_prime(big);
-      corrected
-    }
-  }
-
-  //------------------------------------
   // multiplication
 
   pub fn scale(scalar: u32, big2: BigInt<N>) -> (BigInt<N>, u32) {
@@ -446,3 +383,70 @@ impl<const N: usize> BigInt<N> {
 }
 
 // -----------------------------------------------------------------------------
+// routines specialized to the prime number
+
+impl BigInt256 {
+
+  #[inline(always)]
+  #[unroll_for_loops]
+  pub fn is_lt_prime(big: BigInt256) -> bool {
+    let mut less: bool = false;
+    for i in (0..8).rev() {
+      if big.0[i] < PRIME_ARRAY[i] {
+        less = true;
+        break;
+      }
+      if big.0[i] > PRIME_ARRAY[i] {
+        break;
+      }
+    }
+    less
+  }
+
+  #[inline(always)]
+  pub fn is_ge_prime(big: BigInt256) -> bool {
+    !BigInt256::is_lt_prime(big)
+  }
+
+  #[inline(always)]
+  #[unroll_for_loops]
+  pub fn add_prime(big: BigInt256) -> (BigInt256, bool) {
+    let mut c  : bool = false;  
+    let mut zs : [u32; 8] = [0; 8];
+    for i in 0..8 {
+      let (z,cout) = addCarry32( big.0[i] , PRIME_ARRAY[i] , c );
+      zs[i] = z;
+      c = cout;
+    }
+    let big: BigInt256 = BigInt(zs);
+    (big, c)
+  }
+
+  #[inline(always)]
+  #[unroll_for_loops]
+  pub fn subtract_prime(big: BigInt256) -> (BigInt256, bool) {
+    let mut c  : bool = false;  
+    let mut zs : [u32; 8] = [0; 8];
+    for i in 0..8 {
+      let (z,cout) = subBorrow32( big.0[i] , PRIME_ARRAY[i] , c );
+      zs[i] = z;
+      c = cout;
+    }
+    let big: BigInt256 = BigInt(zs); 
+    (big, c)
+  }
+
+  #[inline(always)]
+  pub fn subtract_prime_if_necessary(big: BigInt256) -> BigInt256 {
+    if BigInt256::is_lt_prime(big) {
+      big
+    }
+    else {
+      let (corrected, _) = BigInt256::subtract_prime(big);
+      corrected
+    }
+  }
+
+}  
+
+
