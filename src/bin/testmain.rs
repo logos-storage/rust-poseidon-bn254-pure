@@ -8,9 +8,8 @@ use rust_poseidon_bn254_pure::bn254::constant::*;
 use rust_poseidon_bn254_pure::bn254::montgomery::*;
 use rust_poseidon_bn254_pure::bn254::field::*;
 
-use rust_poseidon_bn254_pure::poseidon2::permutation::*;
-
-use rust_poseidon_bn254_pure::poseidon::permutation::*;
+use rust_poseidon_bn254_pure::poseidon;
+use rust_poseidon_bn254_pure::poseidon2;
 
 //------------------------------------------------------------------------------
 
@@ -111,7 +110,7 @@ fn main() {
   println!("");
 
   let input  = [ Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) ];
-  let output = permute_felt( input );
+  let output = poseidon2::permute( input );
 
   println!("x  = {}", input[0] );
   println!("y  = {}", input[1] );
@@ -136,7 +135,7 @@ fn main() {
   let now = Instant::now();
   let mut state: [Felt; 3] = input.clone(); 
   for _i in 0..10000 {
-    state = permute_felt(state);
+    state = poseidon2::permute(state);
   }
 
   // expected output:
@@ -205,20 +204,16 @@ fn main() {
   //  compress3 = 6542985608222806190361240322586112750744169038454362455181422643027100751666
   //  compress4 = 18821383157269793795438455681495246036402687001665670618754263018637548127333
 
-  let in1: Felt = Felt::from_u32(1);
-  let out1 = compress_1(in1);
+  let out1 = poseidon::hash1( Felt::from_u32(1) );
   println!("compress(1) = {}", Felt::to_decimal_string(out1) );
 
-  let in2: [Felt; 2] = [ Felt::from_u32(1) , Felt::from_u32(2) ];
-  let out2 = compress_2(in2);
+  let out2 = poseidon::hash2( Felt::from_u32(1) , Felt::from_u32(2) );
   println!("compress(2) = {}", Felt::to_decimal_string(out2) );
 
-  let in3: [Felt; 3] = [ Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) ];
-  let out3 = compress_3(in3);
+  let out3 = poseidon::hash3( Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) );
   println!("compress(3) = {}", Felt::to_decimal_string(out3) );
 
-  let in4: [Felt; 4] = [ Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) , Felt::from_u32(4) ];
-  let out4 = compress_4(in4);
+  let out4 = poseidon::hash4( Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) , Felt::from_u32(4) );
   println!("compress(4) = {}", Felt::to_decimal_string(out4) );
 
 }

@@ -3,7 +3,6 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use std::hint::{black_box};
 
 use rust_poseidon_bn254_pure::bn254::field::*;
-use rust_poseidon_bn254_pure::bn254::montgomery::{Mont};
 use rust_poseidon_bn254_pure::poseidon;
 use rust_poseidon_bn254_pure::poseidon2;
 
@@ -18,17 +17,10 @@ fn initial_triple() -> Triple {
   ]
 }
 
-pub fn poseidon1_permute_felt(input: Triple) -> Triple {
-  let mut state: [Mont; 3] = Felt::to_mont_vec(input);
-  state = poseidon::permutation::permute_mont_T3(state);
-  let out: Triple = Felt::from_mont_vec(state);
-  out
-}
-
 fn iterate_poseidon1(n: usize) -> Triple {
   let mut state: Triple = initial_triple();
   for _i in 0..n {
-    state = poseidon1_permute_felt(state);
+    state = poseidon::permute::<3>(state);
   }
   state
 }
@@ -36,7 +28,7 @@ fn iterate_poseidon1(n: usize) -> Triple {
 fn iterate_poseidon2(n: usize) -> Triple {
   let mut state: Triple = initial_triple();
   for _i in 0..n {
-    state = poseidon2::permutation::permute_felt(state);
+    state = poseidon2::permute(state);
   }
   state
 }

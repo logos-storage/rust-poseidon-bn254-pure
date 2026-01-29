@@ -31,7 +31,7 @@ fn linear(input: MontTriple) -> MontTriple {
   ]
 }
 
-fn internal_round(rc: Mont, input: MontTriple) -> MontTriple {
+fn internal_round(input: MontTriple, rc: Mont) -> MontTriple {
   let x = sbox( Mont::add( input[0] , rc ) );
   let s = add3( x , input[1] , input[2] );
   [ Mont::add( s , x                   )
@@ -40,7 +40,7 @@ fn internal_round(rc: Mont, input: MontTriple) -> MontTriple {
   ]
 }
 
-fn external_round(rcs: MontTriple, input: MontTriple) -> MontTriple {
+fn external_round(input: MontTriple, rcs: MontTriple) -> MontTriple {
   let x = sbox( Mont::add( input[0] , rcs[0] ) );
   let y = sbox( Mont::add( input[1] , rcs[1] ) );
   let z = sbox( Mont::add( input[2] , rcs[2] ) );
@@ -53,29 +53,34 @@ fn external_round(rcs: MontTriple, input: MontTriple) -> MontTriple {
 
 pub fn permute_mont(input: MontTriple) -> MontTriple {
   let mut state = linear(input);
-  for i in 0..4  { state = external_round( get_initial_RCs(i) , state ); }
-  for i in 0..56 { state = internal_round( INTERNAL_MONT  [i] , state ); }
-  for i in 0..4  { state = external_round( get_final_RCs  (i) , state ); }
+  for i in 0..4  { state = external_round( state , get_initial_RCs(i) ); }
+  for i in 0..56 { state = internal_round( state , INTERNAL_MONT  [i] ); }
+  for i in 0..4  { state = external_round( state , get_final_RCs  (i) ); }
   state
 }
 
 //------------------------------------------------------------------------------
 
-pub fn permute_felt_iterated(input: FeltTriple, count: usize) -> FeltTriple {
+pub fn compress(input: [Felt; 2]) -> Felt {
+  let mut state: [Mont; 3] = [Mont::zero(); 3]; 
+  for i in 0..2 { state[i] = Felt::to_mont(input[i]); }
+  state = permute_mont(state);
+  Felt::from_mont(state[0])
+}
 
+pub fn permute(input: [Felt; 3]) -> [Felt; 3] {
+  let state: MontTriple = Felt::to_mont_vec(input);
+  let output = permute_mont(state);
+  Felt::from_mont_vec(output) 
+}
+
+pub fn permute_iterated(input: [Felt; 3], count: usize) -> [Felt; 3] {
   let mut state: MontTriple = Felt::to_mont_vec(input);
-
   for _i in 0..count { 
     state = permute_mont(state);
   }
-
   let out: FeltTriple = Felt::from_mont_vec(state);
-
   out
-}
-
-pub fn permute_felt(input: FeltTriple) -> FeltTriple {
-  permute_felt_iterated(input, 1)
 }
 
 //------------------------------------------------------------------------------
