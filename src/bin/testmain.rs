@@ -32,87 +32,86 @@ const MONT3 : Mont = Mont::unsafe_make( [ 0x24a2de63 , 0xfbb9d8d0 , 0x671492ce ,
  
 fn main() {
 
-  BigInt::print("PRIME",&FIELD_PRIME);
+  BigInt::debug_print("PRIME", FIELD_PRIME);
 
   println!("");
 
-  BigInt::print("R1",&BIG_R1);
-  BigInt::print("R2",&BIG_R2);
-  BigInt::print("R3",&BIG_R3);
+  BigInt::debug_print("R1", BIG_R1);
+  BigInt::debug_print("R2", BIG_R2);
+  BigInt::debug_print("R3", BIG_R3);
 
   println!("");
 
-  BigInt::print("BIG1",&BIG1);
-  BigInt::print("BIG2",&BIG2);
-  BigInt::print("BIG3",&BIG3);
+  BigInt::debug_print("BIG1", BIG1);
+  BigInt::debug_print("BIG2", BIG2);
+  BigInt::debug_print("BIG3", BIG3);
 
   println!("");
 
-  Mont::print_internal("MONT1",&MONT1);
-  Mont::print_internal("MONT2",&MONT2);
-  Mont::print_internal("MONT3",&MONT3);
+  Mont::debug_print_internal("MONT1", MONT1);
+  Mont::debug_print_internal("MONT2", MONT2);
+  Mont::debug_print_internal("MONT3", MONT3);
   println!("-----");
-  Mont::print_standard("MONT1",&MONT1);
-  Mont::print_standard("MONT2",&MONT2);
-  Mont::print_standard("MONT3",&MONT3);
+  Mont::debug_print_standard("MONT1", MONT1);
+  Mont::debug_print_standard("MONT2", MONT2);
+  Mont::debug_print_standard("MONT3", MONT3);
 
   println!("");
 
-  Felt::print("FELT1",&FELT1);
-  Felt::print("FELT2",&FELT2);
-  Felt::print("FELT3",&FELT3);
+  Felt::debug_print("FELT1", FELT1);
+  Felt::debug_print("FELT2", FELT2);
+  Felt::debug_print("FELT3", FELT3);
 
   println!("");
   println!("bigint:");
   println!("");
 
-  let (x,c) = BigInt::addCarry( &BIG1, &BIG2 );
-  let (y,d) = BigInt::addCarry( &BIG2, &BIG3 );
-  let (z,e) = BigInt::addCarry( &BIG3, &BIG1 );
+  let (x,c) = BigInt::addCarry( BIG1, BIG2 );
+  let (y,d) = BigInt::addCarry( BIG2, BIG3 );
+  let (z,e) = BigInt::addCarry( BIG3, BIG1 );
 
-  println!("B1+B2 = {} + {}", &x, c);  
-  println!("B2+B3 = {} + {}", &y, d);  
-  println!("B3+B1 = {} + {}", &z, e);  
+  println!("B1+B2 = {} + {}", x, c);  
+  println!("B2+B3 = {} + {}", y, d);  
+  println!("B3+B1 = {} + {}", z, e);  
   println!("-----");
 
-  let u: BigInt<16> = BigInt::<8>::mul( &BIG1, &BIG2 );
-  println!("B1*B2 = {}", &u);  
+  let u: BigInt<16> = BigInt::<8>::mul( BIG1, BIG2 );
+  println!("B1*B2 = {}", u);  
 
   println!("");
   println!("montgomery:");
   println!("");
 
-  println!("M1+M2 = {}", Mont::add( &MONT1, &MONT2) );  
-  println!("M2+M3 = {}", Mont::add( &MONT2, &MONT3) );  
-  println!("M3+M1 = {}", Mont::add( &MONT3, &MONT1) );  
+  println!("M1+M2 = {}", MONT1 + MONT2 );  
+  println!("M2+M3 = {}", MONT2 + MONT3 );  
+  println!("M3+M1 = {}", MONT3 + MONT1 );  
   println!("-----");
 
-  println!("M1*M2 = {}", Mont::mul( &MONT1, &MONT2) );  
-  println!("M2*M3 = {}", Mont::mul( &MONT2, &MONT3) );  
-  println!("M3*M1 = {}", Mont::mul( &MONT3, &MONT1) );  
+  println!("M1*M2 = {}", MONT1 * MONT2 );  
+  println!("M2*M3 = {}", MONT2 * MONT3 );  
+  println!("M3*M1 = {}", MONT3 * MONT1 );  
 
   println!("");
   println!("felt (standard repr):");
   println!("");
 
-  println!("F1+F2 = {}", Felt::add( &FELT1, &FELT2) );  
-  println!("F2+F3 = {}", Felt::add( &FELT2, &FELT3) );  
-  println!("F3+F1 = {}", Felt::add( &FELT3, &FELT1) );  
+  println!("F1+F2 = {}", FELT1 + FELT2 );  
+  println!("F2+F3 = {}", FELT2 + FELT3 );  
+  println!("F3+F1 = {}", FELT3 + FELT1 );  
   println!("-----");
 
-  println!("F1*F2 = {}", Felt::mul( &FELT1, &FELT2) );  
-  println!("F2*F3 = {}", Felt::mul( &FELT2, &FELT3) );  
-  println!("F3*F1 = {}", Felt::mul( &FELT3, &FELT1) );  
+  println!("F1*F2 = {}", FELT1 * FELT2 );  
+  println!("F2*F3 = {}", FELT2 * FELT3 );  
+  println!("F3*F1 = {}", FELT3 * FELT1 );  
 
   //----------------------------------------------------------------------------
 
-/*
   println!("");
   println!("poseidon2 KAT:");
   println!("");
 
   let input  = ( Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) );
-  let output = permute_felt( &input );
+  let output = permute_felt( input );
 
   println!("x  = {}", input.0 );
   println!("y  = {}", input.1 );
@@ -137,7 +136,7 @@ fn main() {
   let now = Instant::now();
   let mut state: (Felt,Felt,Felt) = input.clone(); 
   for _i in 0..10000 {
-    state = permute_felt(&state);
+    state = permute_felt(state);
   }
 
   // expected output:
@@ -152,25 +151,22 @@ fn main() {
   let elapsed = now.elapsed();
   println!("Elapsed: {:.3?}", elapsed);
 
-*/
 
   //----------------------------------------------------------------------------
 
-/*
   println!("");
   println!("sanity checking comparison with the prime");
   let one : Big = BigInt::from_u32(1);
-  let a: Big = BigInt::sub(&FIELD_PRIME, &one);
-  let b: Big =              FIELD_PRIME       ; 
-  let c: Big = BigInt::add(&FIELD_PRIME, &one);
+  let a: Big = FIELD_PRIME + one;
+  let b: Big = FIELD_PRIME      ; 
+  let c: Big = FIELD_PRIME - one;
   println!("a = {}", a );
   println!("b = {}", b );
   println!("c = {}", c );
   println!("{} , {} , {}" , 
-      BigInt::is_lt_prime(&a) , 
-      BigInt::is_lt_prime(&b) , 
-      BigInt::is_lt_prime(&c) );
-*/
+      BigInt::is_lt_prime(a) , 
+      BigInt::is_lt_prime(b) , 
+      BigInt::is_lt_prime(c) );
 
   //----------------------------------------------------------------------------
 
@@ -178,8 +174,8 @@ fn main() {
     println!("");
     println!("conversion to/from bytes");
     let a  = FELT1;
-    let xs = Felt::to_le_bytes(&a);
-    let b  = Felt::unsafe_from_le_bytes(&xs);
+    let xs = Felt::to_le_bytes(a);
+    let b  = Felt::unsafe_from_le_bytes(xs);
     println!("a = {}",a);
     println!("b = {}",b);
     println!("le = {:?}",xs);
@@ -187,8 +183,8 @@ fn main() {
 
   {
     let a  = FELT2;
-    let ys = Felt::to_be_bytes(&a);
-    let b  = Felt::unsafe_from_be_bytes(&ys);
+    let ys = Felt::to_be_bytes(a);
+    let b  = Felt::unsafe_from_be_bytes(ys);
     println!("a = {}",a);
     println!("b = {}",b);
     println!("be = {:?}",ys);
@@ -199,24 +195,31 @@ fn main() {
 /*
   println!("underlying repr = {:?} ", MONT1);
   println!("in hex = {}", MONT1);
-  println!("in dec = {}", Mont::to_decimal_string(&MONT1));
+  println!("in dec = {}", Mont::to_decimal_string(MONT1));
 */
+
+  //  expected results:
+  //
+  //  compress1 = 18586133768512220936620570745912940619677854269274689475585506675881198879027
+  //  compress2 = 7853200120776062878684798364095072458815029376092732009249414926327459813530
+  //  compress3 = 6542985608222806190361240322586112750744169038454362455181422643027100751666
+  //  compress4 = 18821383157269793795438455681495246036402687001665670618754263018637548127333
 
   let in1: Felt = Felt::from_u32(1);
   let out1 = compress_1(in1);
-  println!("compress(1) = {}", Felt::to_decimal_string(&out1) );
+  println!("compress(1) = {}", Felt::to_decimal_string(out1) );
 
   let in2: [Felt; 2] = [ Felt::from_u32(1) , Felt::from_u32(2) ];
   let out2 = compress_2(in2);
-  println!("compress(2) = {}", Felt::to_decimal_string(&out2) );
+  println!("compress(2) = {}", Felt::to_decimal_string(out2) );
 
   let in3: [Felt; 3] = [ Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) ];
   let out3 = compress_3(in3);
-  println!("compress(3) = {}", Felt::to_decimal_string(&out3) );
+  println!("compress(3) = {}", Felt::to_decimal_string(out3) );
 
   let in4: [Felt; 4] = [ Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) , Felt::from_u32(4) ];
   let out4 = compress_4(in4);
-  println!("compress(4) = {}", Felt::to_decimal_string(&out4) );
+  println!("compress(4) = {}", Felt::to_decimal_string(out4) );
 
 }
 

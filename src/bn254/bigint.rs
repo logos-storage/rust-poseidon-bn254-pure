@@ -39,7 +39,7 @@ impl<const N: usize> fmt::Display for BigInt<N> {
 }
 
 impl<const N: usize> BigInt<N> {
-  pub fn print(s: &str, A: &BigInt<N>) {
+  pub fn debug_print(s: &str, A: BigInt<N>) {
     println!("{} = {}", s, A);
   }
 }
@@ -49,20 +49,20 @@ impl<const N: usize> BigInt<N> {
 
 impl<const N: usize> Add for BigInt<N> {
   type Output = Self;
-  fn add(self, other: Self) -> Self { BigInt::add(&self,&other) }
+  fn add(self, other: Self) -> Self { BigInt::add(self,other) }
 }
 
 impl<const N: usize> Sub for BigInt<N> {
   type Output = Self;
-  fn sub(self, other: Self) -> Self { BigInt::sub(&self,&other) }
+  fn sub(self, other: Self) -> Self { BigInt::sub(self,other) }
 }
 
 impl<const N: usize> PartialOrd for BigInt<N> {
-  fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(BigInt::cmp(&self,&other)) }
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(BigInt::cmp(*self, *other)) }
 }
 
 impl<const N: usize> Ord for BigInt<N> {
-  fn cmp(&self, other: &Self) -> Ordering { BigInt::cmp(&self,&other) }
+  fn cmp(&self, other: &Self) -> Ordering { BigInt::cmp(*self, *other) }
 }
 
 //------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ impl<const N: usize> BigInt<N> {
   //------------------------------------
   // conversion to/from bytes
 
-  pub fn to_le_bytes(big: &BigInt<N>) -> [u8; 4*N] {
+  pub fn to_le_bytes(big: BigInt<N>) -> [u8; 4*N] {
     let mut buf : [u8; 4*N] = [0; 4*N];
     for i in 0..N {
       let k = 4*i;
@@ -113,7 +113,7 @@ impl<const N: usize> BigInt<N> {
     buf
   }
 
-  pub fn from_le_bytes(buf : &[u8; 4*N]) -> BigInt<N> {
+  pub fn from_le_bytes(buf : [u8; 4*N]) -> BigInt<N> {
     let mut ws: [u32; N] = [0; N];
     for i in 0..N {
       let k = 4*i;
@@ -125,7 +125,7 @@ impl<const N: usize> BigInt<N> {
     BigInt(ws)
   }
 
-  pub fn to_be_bytes(big: &BigInt<N>) -> [u8; 4*N] {
+  pub fn to_be_bytes(big: BigInt<N>) -> [u8; 4*N] {
     let mut buf : [u8; 4*N] = [0; 4*N];
     for i in 0..N {
       let k = 4*i;
@@ -134,7 +134,7 @@ impl<const N: usize> BigInt<N> {
     buf
   }
 
-  pub fn from_be_bytes(buf: &[u8; 4*N]) -> BigInt<N> {
+  pub fn from_be_bytes(buf: [u8; 4*N]) -> BigInt<N> {
     let mut ws: [u32; N] = [0; N];
     for i in 0..N {
       let k = 4*i;
@@ -149,7 +149,7 @@ impl<const N: usize> BigInt<N> {
   //------------------------------------
   // decimal printing
 
-  pub fn divmod_small(big: &BigInt<N>, modulus: u32) -> (BigInt<N> , u32) {
+  pub fn divmod_small(big: BigInt<N>, modulus: u32) -> (BigInt<N> , u32) {
     let u64_modulus: u64 = modulus as u64;
     let mut carry: u32 = 0;
     let mut qs: [u32; N] = [0; N];
@@ -161,11 +161,11 @@ impl<const N: usize> BigInt<N> {
     (BigInt(qs), carry)
   }
 
-  pub fn to_decimal_string(input: &BigInt<N>) -> String {
+  pub fn to_decimal_string(input: BigInt<N>) -> String {
     let mut digits: Vec<u8> = Vec::new();
     let mut big: BigInt<N> = input.clone();
-    while( !BigInt::is_zero(&big) ) {
-      let (q,r) = BigInt::divmod_small(&big, 10);
+    while( !BigInt::is_zero(big) ) {
+      let (q,r) = BigInt::divmod_small(big, 10);
       digits.push( 48 + (r as u8) );
       big = q;
     }
@@ -178,7 +178,7 @@ impl<const N: usize> BigInt<N> {
 
   //------------------------------------
 
-  pub fn truncate1(big: &BigInt<{N+1}>) -> BigInt<N> {
+  pub fn truncate1(big: BigInt<{N+1}>) -> BigInt<N> {
     // let small: [u32; N] = &big.limbs[0..N];
     let mut small: [u32; N] = [0; N];
     for i in 0..N { small[i] = big.0[i]; }
@@ -198,11 +198,11 @@ impl<const N: usize> BigInt<N> {
   //------------------------------------
   // comparison
 
-  pub fn is_zero(big: &BigInt<N>) -> bool {
+  pub fn is_zero(big: BigInt<N>) -> bool {
     big.0.iter().all(|&x| x == 0)
   }
 
-  pub fn cmp(big1: &BigInt<N>, big2: &BigInt<N>) -> Ordering {
+  pub fn cmp(big1: BigInt<N>, big2: BigInt<N>) -> Ordering {
     let mut res : Ordering = Ordering::Equal;
     for i in (0..N).rev() {
       if big1.0[i] < big2.0[i] {
@@ -222,7 +222,7 @@ impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn addCarry(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
+  pub fn addCarry(big1: BigInt<N>, big2: BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
@@ -236,7 +236,7 @@ impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn subBorrow(big1: &BigInt<N>, big2: &BigInt<N>) -> (BigInt<N>, bool) {
+  pub fn subBorrow(big1: BigInt<N>, big2: BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
@@ -248,12 +248,12 @@ impl<const N: usize> BigInt<N> {
     (big, c)
   }
 
-  pub fn add(big1: &BigInt<N>, big2: &BigInt<N>) -> BigInt<N> {
+  pub fn add(big1: BigInt<N>, big2: BigInt<N>) -> BigInt<N> {
     let (out,_) = BigInt::addCarry(big1,big2);
     out
   }
 
-  pub fn sub(big1: &BigInt<N>, big2: &BigInt<N>) -> BigInt<N> {
+  pub fn sub(big1: BigInt<N>, big2: BigInt<N>) -> BigInt<N> {
     let (out,_) = BigInt::subBorrow(big1,big2);
     out
   }
@@ -263,7 +263,7 @@ impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn is_lt_prime(big: &BigInt<N>) -> bool {
+  pub fn is_lt_prime(big: BigInt<N>) -> bool {
     let mut less: bool = false;
     for i in (0..N).rev() {
       if big.0[i] < PRIME_ARRAY[i] {
@@ -278,13 +278,13 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline(always)]
-  pub fn is_ge_prime(big: &BigInt<N>) -> bool {
+  pub fn is_ge_prime(big: BigInt<N>) -> bool {
     !BigInt::is_lt_prime(big)
   }
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn add_prime(big: &BigInt<N>) -> (BigInt<N>, bool) {
+  pub fn add_prime(big: BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
@@ -298,7 +298,7 @@ impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn subtract_prime(big: &BigInt<N>) -> (BigInt<N>, bool) {
+  pub fn subtract_prime(big: BigInt<N>) -> (BigInt<N>, bool) {
     let mut c  : bool = false;  
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
@@ -311,9 +311,9 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline(always)]
-  pub fn subtract_prime_if_necessary(big: &BigInt<N>) -> BigInt<N> {
+  pub fn subtract_prime_if_necessary(big: BigInt<N>) -> BigInt<N> {
     if BigInt::is_lt_prime(big) {
-      *big
+      big
     }
     else {
       let (corrected, _) = BigInt::subtract_prime(big);
@@ -324,7 +324,7 @@ impl<const N: usize> BigInt<N> {
   //------------------------------------
   // multiplication
 
-  pub fn scale(scalar: u32, big2: &BigInt<N>) -> (BigInt<N>, u32) {
+  pub fn scale(scalar: u32, big2: BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
@@ -338,7 +338,7 @@ impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn scaleAdd(scalar: u32, vector: &BigInt<N>, add: &BigInt<N>) -> (BigInt<N>, u32) {
+  pub fn scaleAdd(scalar: u32, vector: BigInt<N>, add: BigInt<N>) -> (BigInt<N>, u32) {
     let mut c  : u32 = 0;
     let mut zs : [u32; N] = [0; N];
     for i in 0..N {
@@ -352,11 +352,11 @@ impl<const N: usize> BigInt<N> {
 
   #[inline(always)]
   #[unroll_for_loops]
-  pub fn multiply<const M: usize>(big1: &BigInt<N>, big2: &BigInt<M>) -> BigInt<{N+M}> {
+  pub fn multiply<const M: usize>(big1: BigInt<N>, big2: BigInt<M>) -> BigInt<{N+M}> {
     let mut product : [u32; N+M] = [0; N+M];
     let mut state   : [u32; N]   = [0; N];
     for j in 0..M {
-      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], big1, BigInt(state) );
       product[j] = scaled.0[0];
       for i in 1..N { state[i-1] = scaled.0[i] }
       state[N-1] = carry;
@@ -369,18 +369,18 @@ impl<const N: usize> BigInt<N> {
   }
 
   #[inline(always)]
-  pub fn mul(big1: &BigInt<N>, big2: &BigInt<N>) -> BigInt<{N+N}> {
+  pub fn mul(big1: BigInt<N>, big2: BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big1,big2)
   }
 
   // x*y + z
   #[inline(always)]
-  pub fn mulAdd(big1: &BigInt<N>, big2: &BigInt<N>, big3: &BigInt<N>) -> BigInt<{N+N}> {
+  pub fn mulAdd(big1: BigInt<N>, big2: BigInt<N>, big3: BigInt<N>) -> BigInt<{N+N}> {
     // first compute the product
     let mut product : [u32; N+N] = [0; N+N];
     let mut state   : [u32; N]   = [0; N];
     for j in 0..N {
-      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], big1, BigInt(state) );
       product[j] = scaled.0[0];
       for i in 1..N { state[i-1] = scaled.0[i] }
       state[N-1] = carry;
@@ -408,12 +408,12 @@ impl<const N: usize> BigInt<N> {
 
   // x*y + (z << 256)
   #[inline(always)]
-  pub fn mulAddShifted(big1: &BigInt<N>, big2: &BigInt<N>, big3: &BigInt<N>) -> BigInt<{N+N}> {
+  pub fn mulAddShifted(big1: BigInt<N>, big2: BigInt<N>, big3: BigInt<N>) -> BigInt<{N+N}> {
     // first compute the product
     let mut product : [u32; N+N] = [0; N+N];
     let mut state   : [u32; N]   = [0; N];
     for j in 0..N {
-      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
+      let (scaled,carry) = BigInt::scaleAdd( big2.0[j], big1, BigInt(state) );
       product[j] = scaled.0[0];
       for i in 1..N { state[i-1] = scaled.0[i] }
       state[N-1] = carry;
@@ -434,92 +434,15 @@ impl<const N: usize> BigInt<N> {
   }
 
   // TODO: optimize this?!
-  pub fn sqr_naive(big: &BigInt<N>) -> BigInt<{N+N}> {
+  pub fn sqr_naive(big: BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big,big)
   }
 
   #[inline(always)]
-  pub fn sqr(big: &BigInt<N>) -> BigInt<{N+N}> {
+  pub fn sqr(big: BigInt<N>) -> BigInt<{N+N}> {
     BigInt::multiply(big,big)
   }
 
-// -----------------------------------------------------------------------------
-// half-assed optimization attempts...
-
-/*
-  pub fn sqr_also_slower(big: &BigInt<N>) -> BigInt<{N+N}> {
-
-    let mut mul_mtx : [[(u32,u32); N]; N] = [[(0,0); N]; N];
-    for i in 0..N {
-      for j in i..N {
-        // i <= j
-        let lo_hi = mulExt32( big.0[i] , big.0[j] );
-        mul_mtx[i][j] = lo_hi;
-        mul_mtx[j][i] = lo_hi;
-      }
-    }
-
-    let mut product : [u32; N+N] = [0; N+N];
-    let mut state   : [u32; N]   = [0; N];
-    for j in 0..N {
-      // let (scaled,carry) = BigInt::scaleAdd( big2.0[j], &big1, &BigInt(state) );
-
-      let mut scaled : [u32; N] = [0; N];
-      let mut carry  : u32 = 0;
-      for k in 0..N {
-        // scalar = big2.0[j]
-        // vector = big1
-        let (lo,hi) = u64AddAdd32( mul_mtx[j][k], carry, state[k] );
-        scaled[k] = lo;
-        carry     = hi;
-      }
-
-      product[j] = scaled[0];
-      for i in 1..N { state[i-1] = scaled[i] }
-      state[N-1] = carry;
-    }
-
-    for i in 0..N { 
-      product[i+N] = state[i]
-    }
-  
-    BigInt(product)
-  }
-
-// -----------------------------------
-
-  pub fn sqr_is_actually_slower(big: &BigInt<N>) -> BigInt<{N+N}> {
-
-    let mut product : [u32; N+N] = [0; N+N];
-    let mut carry   : u64 = 0;
-
-    for k in 0..(N+N-1) {
-
-      let mut sum_lo: u64 = carry;
-      let mut sum_hi: u64 = 0;
-      for i in 0..min(N,k+1) {
-        let j = k - i;
-        if j < N && i <= j {
-          let (lo,hi) = mulExt32( big.limbs[i], big.limbs[j] );
-          sum_lo += (lo as u64);
-          sum_hi += (hi as u64);
-          if i < j {
-            sum_lo += (lo as u64);
-            sum_hi += (hi as u64);
-          }
-        }
-      }
-      let (u,v) = takeApart64(sum_lo);
-      product[k] = u;
-      carry = sum_hi + (v as u64);
-    }
-
-    product[N+N-1] = (carry as u32);
-    BigInt { limbs: product }
-  }
-
-*/
-
 }
 
-//------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------

@@ -47,9 +47,9 @@ const fn internal_round_count(T: usize) -> usize {
 
 #[inline(always)]
 fn sbox(x: Mont) -> Mont {
-  let x2 = Mont::sqr(&x );
-  let x4 = Mont::sqr(&x2);
-  Mont::mul(&x,&x4)
+  let x2 = Mont::sqr(x );
+  let x4 = Mont::sqr(x2);
+  Mont::mul(x,x4)
 }
 
 fn matrix_mul<const T: usize>(input: [Mont; T], mtx: [Mont; T*T]) -> [Mont; T] {
@@ -57,7 +57,7 @@ fn matrix_mul<const T: usize>(input: [Mont; T], mtx: [Mont; T*T]) -> [Mont; T] {
   for i in 0..T {
     let mut acc: Mont = Mont::zero();
     for j in 0..T {
-      acc = Mont::mulAdd( &mtx[j*T+i] , &input[j] , &acc );
+      acc = Mont::mulAdd( mtx[j*T+i] , input[j] , acc );
     }
     out[i] = acc;
   }
@@ -68,25 +68,25 @@ fn mix_S<const T: usize>(input: [Mont; T], scoeffs: &[Mont]) -> [Mont; T] {
   let mut out: [Mont; T] = [Mont::zero(); T];
   let mut acc: Mont = Mont::zero();
   for j in 0..T {
-    acc = Mont::mulAdd( &scoeffs[j] , &input[j] , &acc );
+    acc = Mont::mulAdd( scoeffs[j] , input[j] , acc );
   }
   out[0] = acc;
   for j in 1..T {
-    out[j] = Mont::mulAdd( &scoeffs[T+j-1] , &input[0] , &input[j] );
+    out[j] = Mont::mulAdd( scoeffs[T+j-1] , input[0] , input[j] );
   }
   out
 }
 
 fn internal_round<const T: usize>(rc: Mont, scoeffs: &[Mont], input: [Mont; T]) -> [Mont; T] {
   let mut xs: [Mont; T] = input;
-  xs[0] = Mont::add( &sbox( xs[0] ) , &rc );
+  xs[0] = Mont::add( sbox( xs[0] ) , rc );
   mix_S::<T>(xs, scoeffs)
 }
 
 fn external_round<const T: usize>(rcs: &[Mont], input: [Mont; T], mtx: [Mont; T*T]) -> [Mont; T] {
   let mut xs: [Mont; T] = [Mont::zero(); T];
   for j in 0..T {
-    xs[j] = Mont::add( &sbox( input[j] ) , &rcs[j] );
+    xs[j] = Mont::add( sbox( input[j] ) , rcs[j] );
   }
   matrix_mul::<T>(xs, mtx)
 }
@@ -119,7 +119,7 @@ pub fn permute_mont_T2(input: [Mont; 2]) -> [Mont; 2] {
 
   let mut state: [Mont; T] = input;
   for j in 0..T { 
-    state[j] = Mont::add( &state[j] , &C[j] );
+    state[j] = Mont::add( state[j] , C[j] );
   }
   for i in 0..4  { 
     let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
@@ -155,7 +155,7 @@ pub fn permute_mont_T3(input: [Mont; 3]) -> [Mont; 3] {
 
   let mut state: [Mont; T] = input;
   for j in 0..T { 
-    state[j] = Mont::add( &state[j] , &C[j] );
+    state[j] = Mont::add( state[j] , C[j] );
   }
   for i in 0..4  { 
     let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
@@ -191,7 +191,7 @@ pub fn permute_mont_T4(input: [Mont; 4]) -> [Mont; 4] {
 
   let mut state: [Mont; T] = input;
   for j in 0..T { 
-    state[j] = Mont::add( &state[j] , &C[j] );
+    state[j] = Mont::add( state[j] , C[j] );
   }
   for i in 0..4  { 
     let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
@@ -227,7 +227,7 @@ pub fn permute_mont_T5(input: [Mont; 5]) -> [Mont; 5] {
 
   let mut state: [Mont; T] = input;
   for j in 0..T { 
-    state[j] = Mont::add( &state[j] , &C[j] );
+    state[j] = Mont::add( state[j] , C[j] );
   }
   for i in 0..4  { 
     let rcs: &[Mont] = &C[ ((i+1)*T) .. ((i+2)*T) ];
@@ -254,43 +254,43 @@ pub fn permute_mont_T5(input: [Mont; 5]) -> [Mont; 5] {
 pub fn compress_1(input: Felt) -> Felt {
   let mut state: [Mont; 2] = 
     [ Mont::zero()
-    , Felt::to_mont(&input)
+    , Felt::to_mont(input)
     ]; 
   state = permute_mont_T2(state);
-  Felt::from_mont(&state[0])
+  Felt::from_mont(state[0])
 }
 
 pub fn compress_2(input: [Felt;2]) -> Felt {
   let mut state: [Mont; 3] = 
     [ Mont::zero()
-    , Felt::to_mont(&input[0])
-    , Felt::to_mont(&input[1])
+    , Felt::to_mont(input[0])
+    , Felt::to_mont(input[1])
     ]; 
   state = permute_mont_T3(state);
-  Felt::from_mont(&state[0])
+  Felt::from_mont(state[0])
 }
 
 pub fn compress_3(input: [Felt;3]) -> Felt {
   let mut state: [Mont; 4] = 
     [ Mont::zero()
-    , Felt::to_mont(&input[0])
-    , Felt::to_mont(&input[1])
-    , Felt::to_mont(&input[2])
+    , Felt::to_mont(input[0])
+    , Felt::to_mont(input[1])
+    , Felt::to_mont(input[2])
     ]; 
   state = permute_mont_T4(state);
-  Felt::from_mont(&state[0])
+  Felt::from_mont(state[0])
 }
 
 pub fn compress_4(input: [Felt;4]) -> Felt {
   let mut state: [Mont; 5] = 
     [ Mont::zero()
-    , Felt::to_mont(&input[0])
-    , Felt::to_mont(&input[1])
-    , Felt::to_mont(&input[2])
-    , Felt::to_mont(&input[3])
+    , Felt::to_mont(input[0])
+    , Felt::to_mont(input[1])
+    , Felt::to_mont(input[2])
+    , Felt::to_mont(input[3])
     ]; 
   state = permute_mont_T5(state);
-  Felt::from_mont(&state[0])
+  Felt::from_mont(state[0])
 }
 
 //------------------------------------------------------------------------------

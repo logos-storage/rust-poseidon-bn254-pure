@@ -14,7 +14,7 @@ fn main() {
 
   let mut state: (Felt,Felt,Felt) = input.clone(); 
   for _i in 0..20 {
-    state = permute_felt(&state);
+    state = permute_felt(state);
   }
   println!("x' = {}", state.0 );
   println!("y' = {}", state.1 );
