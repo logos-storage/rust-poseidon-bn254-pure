@@ -83,4 +83,27 @@ pub fn permute_iterated(input: [Felt; 3], count: usize) -> [Felt; 3] {
   out
 }
 
+//==============================================================================
+// *** TESTS
+
+#[cfg(test)]
+mod test {
+
+  use crate::bn254::field::{Felt};
+  use super::*;
+
+  #[test]
+  fn permute3_kat() {
+    let out: [Felt; 3] = permute( [ 0u32.into() , 1u32.into() , 2u32.into() ] );
+    println!(" 0 -> {}" , out[0] );
+    println!(" 1 -> {}" , out[1] );
+    println!(" 2 -> {}" , out[2] );
+    assert_eq!( Felt::to_hex_string( out[0] ) , "0x30610a447b7dec194697fb50786aa7421494bd64c221ba4d3b1af25fb07bd103" );
+    assert_eq!( Felt::to_hex_string( out[1] ) , "0x13f731d6ffbad391be22d2ac364151849e19fa38eced4e761bcd21dbdc600288" );
+    assert_eq!( Felt::to_hex_string( out[2] ) , "0x1433e2c8f68382c447c5c14b8b3df7cbfd9273dd655fe52f1357c27150da786f" );
+  }
+
+}
+
 //------------------------------------------------------------------------------
+
