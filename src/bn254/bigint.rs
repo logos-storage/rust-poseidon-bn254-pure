@@ -1,4 +1,5 @@
 
+
 //
 // big integers, represented as little-endian arrays of u32-s
 //
@@ -10,7 +11,9 @@
 
 use std::fmt;
 use std::cmp::{Ordering,min};
-use std::ops::{Add,Sub};
+use std::ops::{Add,Sub,RangeFull};
+
+use std::random::{RandomSource,Distribution};
 
 use unroll::unroll_for_loops;
 
@@ -85,6 +88,15 @@ impl<const N: usize> Default for BigInt<N> {
 
 impl<const N: usize> From<u32> for BigInt<N> {
   fn from(x: u32) -> Self { Self::from_u32(x) }
+}
+
+//------------------------------------------------------------------------------
+// random trait
+
+impl<const N: usize> Distribution<BigInt<N>> for RangeFull {
+  fn sample(&self, source: &mut (impl RandomSource + ?Sized)) -> BigInt<N> {
+    BigInt::sample(source)
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -174,6 +186,10 @@ impl<const N: usize> BigInt<N> {
     }
     digits.reverse();
     str::from_utf8(&digits).unwrap().to_string()
+  }
+
+  pub fn to_hex_string(input: BigInt<N>) -> String {
+    format!("{}", input)
   }
 
   //------------------------------------
@@ -380,6 +396,17 @@ impl<const N: usize> BigInt<N> {
     BigInt::multiply(big,big)
   }
 
+  //------------------------------------
+  // random
+
+  pub fn sample(source: &mut (impl RandomSource + ?Sized)) -> BigInt<N> {
+    let mut xs: [u32; N] = [0; N];
+    for i in 0..N {
+      xs[i] = RangeFull.sample(source);
+    }
+    BigInt::make(xs)
+  }
+
 }
 
 // -----------------------------------------------------------------------------
@@ -445,6 +472,27 @@ impl BigInt256 {
       let (corrected, _) = BigInt256::subtract_prime(big);
       corrected
     }
+  }
+
+  //------------------------------------
+  // ramndom
+
+  fn sample_masked(source: &mut (impl RandomSource + ?Sized)) -> BigInt256 {
+    let mut xs: [u32; 8] = [0; 8];
+    for i in 0..8 {
+      xs[i] = RangeFull.sample(source);
+    }
+    xs[7] = xs[7] & 0x_3FFF_FFFF;
+    BigInt::make(xs)
+  }
+
+  // rejection sampling
+  pub fn sample_mod_prime(source: &mut (impl RandomSource + ?Sized)) -> BigInt256 {
+    let mut x: BigInt256 = BigInt256::sample_masked(source);
+    while( !BigInt256::is_lt_prime(x) ) {
+      x = BigInt256::sample_masked(source);
+    }
+    x
   }
 
 }  

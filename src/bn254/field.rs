@@ -10,7 +10,9 @@
 #![allow(non_snake_case)]
 
 use std::fmt;
-use std::ops::{Neg,Add,Sub,Mul};
+use std::ops::{Neg,Add,Sub,Mul,RangeFull};
+
+use std::random::{RandomSource,Distribution};
 
 use crate::bn254::bigint::*;
 use crate::bn254::constant::*;
@@ -91,6 +93,15 @@ impl From<u32> for Felt {
 }
 
 //------------------------------------------------------------------------------
+// random trait
+
+impl Distribution<Felt> for RangeFull {
+  fn sample(&self, source: &mut (impl RandomSource + ?Sized)) -> Felt {
+    Felt(BigInt::sample_mod_prime(source))
+  }
+}
+
+//------------------------------------------------------------------------------
 // internal implementations
 
 impl Felt {
@@ -120,6 +131,10 @@ impl Felt {
 
   pub fn to_decimal_string(input: Felt) -> String {
     BigInt::to_decimal_string(input.0)
+  }
+
+  pub fn to_hex_string(input: Felt) -> String {
+    BigInt::to_hex_string(input.0)
   }
 
   //------------------------------------

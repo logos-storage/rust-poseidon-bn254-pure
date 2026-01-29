@@ -1,7 +1,11 @@
 
 #![allow(unused)]
+#![feature(random)]
 
 use std::time::Instant;
+
+use std::ops::{RangeFull};
+use std::random::{Distribution,DefaultRandomSource,random};
 
 use rust_poseidon_bn254_pure::bn254::bigint::*;
 use rust_poseidon_bn254_pure::bn254::constant::*;
@@ -153,6 +157,7 @@ fn main() {
 
   //----------------------------------------------------------------------------
 
+/*
   println!("");
   println!("sanity checking comparison with the prime");
   let one : Big = BigInt::from_u32(1);
@@ -166,9 +171,11 @@ fn main() {
       BigInt::is_lt_prime(a) , 
       BigInt::is_lt_prime(b) , 
       BigInt::is_lt_prime(c) );
+*/
 
   //----------------------------------------------------------------------------
 
+/*
   {
     println!("");
     println!("conversion to/from bytes");
@@ -188,14 +195,25 @@ fn main() {
     println!("b = {}",b);
     println!("be = {:?}",ys);
   }
+*/
 
   //----------------------------------------------------------------------------
 
-/*
+  println!("");
   println!("underlying repr = {:?} ", MONT1);
-  println!("in hex = {}", MONT1);
+  println!("in hex = {}", Mont::to_hex_string    (MONT1));
   println!("in dec = {}", Mont::to_decimal_string(MONT1));
-*/
+
+  //----------------------------------------------------------------------------
+
+  println!("");
+  println!("20 random field elements");
+  for i in 0..20 {
+    let x: Felt = random(..);
+    println!(" - {} {} {}", x, Felt::to_bigint(x) < FIELD_PRIME , Felt::is_valid(x) );
+  }
+  
+  //----------------------------------------------------------------------------
 
   //  expected results:
   //
@@ -203,6 +221,8 @@ fn main() {
   //  compress2 = 7853200120776062878684798364095072458815029376092732009249414926327459813530
   //  compress3 = 6542985608222806190361240322586112750744169038454362455181422643027100751666
   //  compress4 = 18821383157269793795438455681495246036402687001665670618754263018637548127333
+
+  println!("");
 
   let out1 = poseidon::hash1( Felt::from_u32(1) );
   println!("compress(1) = {}", Felt::to_decimal_string(out1) );

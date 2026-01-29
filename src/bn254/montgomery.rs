@@ -7,7 +7,9 @@
 #![allow(non_snake_case)]
 
 use std::fmt;
-use std::ops::{Neg,Add,Sub,Mul};
+use std::ops::{Neg,Add,Sub,Mul,RangeFull};
+
+use std::random::{RandomSource,Distribution};
 
 use unroll::unroll_for_loops;
 
@@ -82,6 +84,15 @@ impl From<u32> for Mont {
 }
 
 //------------------------------------------------------------------------------
+// random trait
+
+impl Distribution<Mont> for RangeFull {
+  fn sample(&self, source: &mut (impl RandomSource + ?Sized)) -> Mont {
+    Mont(BigInt::sample_mod_prime(source))
+  }
+}
+
+//------------------------------------------------------------------------------
 // internal implementations
 
 impl Mont {
@@ -125,8 +136,15 @@ impl Mont {
     Mont(big)
   }
 
+  //------------------------------------
+  // to string
+
   pub fn to_decimal_string(input: Mont) -> String {
     BigInt::to_decimal_string(Mont::convert_to_big(input))
+  }
+
+  pub fn to_hex_string(input: Mont) -> String {
+    BigInt::to_hex_string(Mont::convert_to_big(input))
   }
 
   //------------------------------------
