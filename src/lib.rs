@@ -5,6 +5,7 @@
 #![feature(generic_const_exprs)]
 #![feature(random)]
 #![feature(trait_alias)]
+#![feature(unchecked_shifts)]
 
 pub mod bn254;
 pub mod poseidon;
