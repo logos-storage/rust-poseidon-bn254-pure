@@ -11,6 +11,11 @@ pub fn boolToU32(c: bool) -> u32 {
   if c { 1 } else { 0 }
 }
 
+#[inline(always)]
+pub fn boolToMSB32(c: bool) -> u32 {
+  if c { 0x_8000_0000 } else { 0 }
+}
+
 //------------------------------------------------------------------------------
 
 #[inline(always)]
@@ -24,7 +29,7 @@ pub fn subBorrow32_(x: u32, y: u32) -> (u32,bool) {
 }
 
 #[inline(always)]
-pub fn addCarry32(x :u32, y: u32, cin: bool) -> (u32,bool) {
+pub fn addCarry32(x: u32, y: u32, cin: bool) -> (u32,bool) {
   u32::carrying_add(x,y,cin)
 }
 
@@ -68,5 +73,26 @@ pub fn u64AddAdd32(xy: (u32,u32), a: u32, b: u32) -> (u32,u32) {
 
   (lo2,hi2)
 }
+
+//------------------------------------------------------------------------------
+
+// rust, please just go home, you are drunk...
+#[inline(always)]
+pub fn rotRight32By1(cin: bool, x: u32) -> (u32, bool) {
+  unsafe {
+    let cout : bool = (x & 1) != 0;
+    let y    : u32  = u32::unchecked_shr(x,1) | u32::unchecked_shl(boolToU32(cin),31);
+    (y, cout)
+  }
+} 
+
+#[inline(always)]
+pub fn rotLeft32By1(x: u32, cin: bool) -> (bool, u32) {
+  unsafe {
+    let cout : bool = (x & 0x_8000_0000) != 0;
+    let y    : u32  = u32::unchecked_shl(x,1) | boolToU32(cin);
+    (cout, y)
+  }
+} 
 
 //------------------------------------------------------------------------------

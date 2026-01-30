@@ -10,7 +10,7 @@ pub const PRIME_ARRAY  : [u32; 8]  =               [ 0xf0000001 , 0x43e1f593 , 0
 pub const PRIME_EXT    : BigInt<9> = BigInt::make( [ 0xf0000001 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 , 0x00000000 ] );
 pub const FIELD_PRIME  : Big       = BigInt::make( [ 0xf0000001 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 ] );
 pub const PRIME_PLUS_1 : Big       = BigInt::make( [ 0xf0000002 , 0x43e1f593 , 0x79b97091 , 0x2833e848 , 0x8181585d , 0xb85045b6 , 0xe131a029 , 0x30644e72 ] );
-pub const HALFP_PLUS_1 : Big       = BigInt::make( [ 0xf8000001 , 0xa1f0fac9 , 0x3cdcb848 , 0x9419f424 , 0x40c0ac2e , 0xdc2822db , 0x97098d01 , 0x01832273 ] ); 
+pub const HALFP_PLUS_1 : Big       = BigInt::make( [ 0xf8000001 , 0xa1f0fac9 , 0x3cdcb848 , 0x9419f424 , 0x40c0ac2e , 0xdc2822db , 0x7098d014 , 0x18322739 ] );
 
 //------------------------------------------------------------------------------
 // montgomery constants

@@ -261,6 +261,8 @@ impl Mont {
   }
 */
 
+  //----------------
+
   // we can abuse the fact that we know the prime number `p`,
   // for which `p < 2^254` so we won't overflow in the 17th word
 

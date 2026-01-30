@@ -11,3 +11,9 @@ pub trait One {
   fn one() -> Self;
   fn is_one(x: Self) -> bool;
 }
+
+// yeah, this one too...
+
+pub trait Inv {
+  fn inv(x: Self) -> Self;
+}

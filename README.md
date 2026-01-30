@@ -91,8 +91,9 @@ On modern 64-bit CPU-s, the 64-bit version would be preferred (TODO: implement i
 - [x] clean up the code and make it more idiomatic
 - [x] implement `circomlib`-compatible Poseidon
 - [x] benchmark RISC-V cycles
+- [x] add a proper test-suite; in particular, more complete testing of the field operations
+- [ ] add more tests for the corner cases specifically
 - [ ] add more Poseidon2 state widths (not just `t=3`)
-- [ ] add a proper test-suite; in particular, more complete testing of the field operations
 - [ ] add a 64 bit version
 - [ ] implement the sponge construction
 - [ ] optimize squaring to use less multiplications (?)

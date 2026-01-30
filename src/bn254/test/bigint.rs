@@ -1,5 +1,7 @@
 
+//
 // tests for bigints
+//
 
 #![allow(unused)]
 
@@ -8,6 +10,7 @@ use quickcheck_macros::quickcheck;
 
 use crate::bn254::traits::*;
 use crate::bn254::bigint::*;
+use crate::bn254::constant::*;
 use crate::bn254::test::properties::*;
 
 type Big  = BigInt<8>;
@@ -129,6 +132,9 @@ fn add_commutative(x: Big, y: Big) -> bool { prop_add_commutative(x,y) }
 fn sub_anticommutative(x: Big, y: Big) -> bool { prop_sub_anticommutative(x,y) }
 
 #[quickcheck]
+fn add_associative(x: Big, y: Big, z: Big) -> bool { prop_add_associative(x,y,z) }
+
+#[quickcheck]
 fn neg_involutive(x: Big) -> bool { prop_neg_involutive(x) }
 
 #[quickcheck]
@@ -144,4 +150,14 @@ fn sub_neg_add(x: Big, y: Big) -> bool { prop_sub_neg_add(x,y) }
 fn sub_add_neg(x: Big, y: Big) -> bool { prop_sub_add_neg(x,y) }
 
 //------------------------------------------------------------------------------
+
+#[quickcheck]
+fn add_halfp(x: Big) -> bool {
+  let a = BigInt::add_half_prime_plus_1(x);
+  let b = x + HALFP_PLUS_1;
+  a == b
+}
+
+//------------------------------------------------------------------------------
+
 

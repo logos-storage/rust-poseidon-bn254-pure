@@ -240,5 +240,25 @@ fn main() {
   //----------------------------------------------------------------------------
 
   println!("{}" , Mont::one() == Mont::convert_from_u32(1) );
+
+  //----------------------------------------------------------------------------
+
+  println!("");
+  let a  = BIG1              ; let (b , c ) = BigInt::shiftRightBy1(a );
+  let a1 = a + BigInt::one() ; let (b1, c1) = BigInt::shiftRightBy1(a1);
+  println!(" a    >> 1 = {} -> {} {}", a , b , c  );
+  println!("(a+1) >> 1 = {} -> {} {}", a1, b1, c1 );
+
+  println!("");
+  let a = FELT1;
+  let b = FELT2;
+  let q = Felt::div(a,b);
+  let r = Felt::mul(q,b);
+  println!("a       = {}" , a);
+  println!("b       = {}" , b);
+  println!("a/b     = {}" , q);
+  println!("(a/b)*b = {}" , r);
+  println!("ok = {}", r == a);
+
 }
 

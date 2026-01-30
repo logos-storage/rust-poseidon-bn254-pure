@@ -10,7 +10,7 @@
 #![allow(non_snake_case)]
 
 use std::fmt;
-use std::ops::{Neg,Add,Sub,Mul,RangeFull};
+use std::ops::{Neg,Add,Sub,Mul,Div,RangeFull};
 
 use std::random::{RandomSource,Distribution};
 
@@ -18,6 +18,7 @@ use crate::bn254::traits::*;
 use crate::bn254::bigint::*;
 use crate::bn254::constant::*;
 use crate::bn254::montgomery::*;
+use crate::bn254::euclid::*;
 
 //------------------------------------------------------------------------------
 
@@ -64,6 +65,11 @@ impl Mul for Felt {
   fn mul(self, other: Self) -> Self { Felt::mul(self, other) }
 }
 
+impl Div for Felt {
+  type Output = Self;
+  fn div(self, other: Self) -> Self { Felt::div(self, other) }
+}
+
 //--------------------------------------
 // (non-standard ones, too...)
 
@@ -75,6 +81,10 @@ impl Zero for Felt {
 impl One for Felt {
   fn one()            -> Self { Felt::one()      }
   fn is_one(x: Self)  -> bool { Felt::is_one(x)  }
+}
+
+impl Inv for Felt {
+  fn inv(x: Self) -> Self { Felt::inv(x) }
 }
 
 //------------------------------------------------------------------------------
@@ -123,6 +133,11 @@ impl Felt {
   #[inline(always)]
   pub fn to_bigint(felt: Felt) -> Big {
     felt.0
+  }
+
+  #[inline(always)]
+  pub const fn unsafe_from_bigint(big: BigInt<8>) -> Felt {
+    Felt(big)
   }
 
   #[inline(always)]
@@ -257,6 +272,26 @@ impl Felt {
     let mont1 = Felt::to_mont(fld1);
     let mont2 = Felt::to_mont(fld2);
     Felt::from_mont(Mont::mul(mont1,mont2))
+  }
+
+  //------------------------------------
+
+  pub fn div_by_2(a: Felt) -> Felt {
+    Felt( BigInt::div_by_2_mod_prime(a.0) )
+  }
+
+  //------------------------------------
+
+  pub fn div(a: Felt, b: Felt) -> Felt {
+    let x: BigInt256 = a.0;
+    let y: BigInt256 = BigInt::zero();
+    let u: BigInt256 = b.0;
+    let v: BigInt256 = FIELD_PRIME;
+    Felt( euclid(x, y, u, v) )
+  }
+
+  pub fn inv(b: Felt) -> Felt {
+    Felt::div( Felt::one() , b )
   }
 
 }

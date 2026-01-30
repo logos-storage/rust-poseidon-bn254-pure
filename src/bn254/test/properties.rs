@@ -1,11 +1,14 @@
 
 // field properties
 
+#![allow(unused)]
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 
 use std::cmp::{Eq};
 use std::ops::{Neg,Add,Sub,Mul,Div};
+
+use crate::bn254::traits::{Zero,One,Inv};
 
 //------------------------------------------------------------------------------
 
@@ -13,9 +16,9 @@ use std::ops::{Neg,Add,Sub,Mul,Div};
 // pub trait Ring  = Group + Mul<Output=Self>;
 // pub trait Field = Ring  + Div<Output=Self>;
 
-pub trait Group : Copy + Clone + Default + From<u32> + Eq + Neg<Output=Self> + Add<Output=Self> + Sub<Output=Self> {}
+pub trait Group : Copy + Clone + Default + From<u32> + Eq + Zero + One + Neg<Output=Self> + Add<Output=Self> + Sub<Output=Self> {}
 pub trait Ring  : Group + Mul<Output=Self> {}
-pub trait Field : Ring  + Div<Output=Self> {}
+pub trait Field : Ring  + Div<Output=Self> + Inv {}
 
 //------------------------------------------------------------------------------
 
@@ -58,6 +61,10 @@ pub fn prop_sub_anticommutative<A: Group>(x: A, y: A) -> bool {
   x - y == xneg( y - x )
 }
 
+pub fn prop_add_associative<A: Group>(x: A, y: A, z: A) -> bool {
+  (x + y) + z == x + (y + z)
+}
+
 pub fn prop_neg_involutive<A: Group>(x: A) -> bool {
   xneg( xneg(x) ) == x
 }
@@ -88,7 +95,7 @@ pub fn prop_thrice<A: Ring>(x: A) -> bool {
   x + x + x == x * small::<A>(3)
 }
 
-//------------------------------------------------------------------------------
+//--------------------------------------
 
 pub fn prop_left_multiplicative_unit<A: Ring>(x: A) -> bool {
   small::<A>(1) * x == x
@@ -102,6 +109,10 @@ pub fn prop_mul_commutative<A: Ring>(x: A, y: A) -> bool {
   x * y == y * x
 }
 
+pub fn prop_mul_associative<A: Ring>(x: A, y: A, z: A) -> bool {
+  (x * y) * z == x * (y * z)
+}
+
 pub fn prop_mul_neg<A: Ring>(x: A, y: A) -> bool {
   xneg(x * y) == xneg(x) * y 
 }
@@ -112,6 +123,41 @@ pub fn prop_distributive_add<A: Ring>(x: A, y: A, z: A) -> bool {
 
 pub fn prop_distributive_sub<A: Ring>(x: A, y: A, z: A) -> bool {
   (x - y) * z == x * z - y * z
+}
+
+//------------------------------------------------------------------------------
+// properties involving division
+
+pub fn prop_div_by_1<A: Field>(x: A) -> bool {
+  x / A::one() == x
+}
+
+pub fn prop_inv_def<A: Field>(x: A) -> bool {
+  A::one() / x == A::inv(x)
+}
+
+pub fn prop_mul_left_inverse<A: Field>(x: A) -> bool {
+  A::inv(x) * x == A::one()
+}
+
+pub fn prop_mul_right_inverse<A: Field>(x: A) -> bool {
+  x * A::inv(x) == A::one()
+}
+
+pub fn prop_mul_div<A: Field>(x: A, y: A) -> bool {
+  (x * y) / y == x
+}
+
+pub fn prop_div_mul<A: Field>(x: A, y: A) -> bool {
+  (x / y) * y == x
+}
+
+pub fn prop_distributive_div<A: Field>(x: A, y: A, z: A) -> bool {
+  (x + y) / z == (x/z) + (y/z) 
+}
+
+pub fn prop_div_div<A: Field>(x: A, y: A, z: A) -> bool {
+  (x / y) / z == x / (y * z)
 }
 
 //------------------------------------------------------------------------------

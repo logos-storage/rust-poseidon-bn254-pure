@@ -19,7 +19,7 @@ use unroll::unroll_for_loops;
 
 use crate::bn254::traits::*;
 use crate::bn254::platform::*;
-use crate::bn254::constant::{PRIME_ARRAY};
+use crate::bn254::constant::*;
 
 //------------------------------------------------------------------------------
 
@@ -271,6 +271,53 @@ impl<const N: usize> BigInt<N> {
   }
 
   //------------------------------------
+  // shifts
+
+  #[inline(always)]
+  pub fn is_even(big: BigInt<N>) -> bool {
+    (big.0[0] & 1) == 0
+  }
+
+  #[inline(always)]
+  pub fn is_odd(big: BigInt<N>) -> bool {
+    (big.0[0] & 1) != 0
+  }
+
+  #[unroll_for_loops]
+  pub fn rotLeftBy1(big: BigInt<N>, cin: bool) -> (bool, BigInt<N>) {
+    let     limbs : [u32; N] = big.0;
+    let mut out   : [u32; N] = [0; N];
+    let mut carry : bool = cin;
+    for i in 0..N {
+      let (c,y) = rotLeft32By1(limbs[i], carry);
+      out[i] = y;
+      carry  = c;
+    }
+    (carry, BigInt(out))
+  }
+
+  #[unroll_for_loops]
+  pub fn rotRightBy1(cin: bool, big: BigInt<N>) -> (BigInt<N>, bool) {
+    let     limbs : [u32; N] = big.0;
+    let mut out   : [u32; N] = [0; N];
+    let mut carry : bool = cin;
+    for i in (0..N).rev() {
+      let (y,c) = rotRight32By1(carry, limbs[i]);
+      out[i] = y;
+      carry  = c;
+    }
+    (BigInt(out), carry)
+  }
+
+  pub fn shiftLeftBy1(big: BigInt<N>) -> (bool, BigInt<N>) {
+    BigInt::rotLeftBy1(big, false)
+  }
+
+  pub fn shiftRightBy1(big: BigInt<N>) -> (BigInt<N>, bool) {
+    BigInt::rotRightBy1(false, big)
+  }
+
+  //------------------------------------
   // addition and subtraction
 
   #[inline(always)]
@@ -480,7 +527,7 @@ impl BigInt256 {
   #[inline(always)]
   #[unroll_for_loops]
   pub fn add_prime(big: BigInt256) -> (BigInt256, bool) {
-    let mut c  : bool = false;  
+    let mut c  : bool     = false;  
     let mut zs : [u32; 8] = [0; 8];
     for i in 0..8 {
       let (z,cout) = addCarry32( big.0[i] , PRIME_ARRAY[i] , c );
@@ -493,8 +540,22 @@ impl BigInt256 {
 
   #[inline(always)]
   #[unroll_for_loops]
+  pub fn add_half_prime_plus_1(big: BigInt256) -> BigInt256 {
+    let mut c  : bool     = false;  
+    let mut zs : [u32; 8] = [0; 8];
+    for i in 0..8 {
+      let (z,cout) = addCarry32( big.0[i] , HALFP_PLUS_1.0[i] , c );
+      c     = cout;
+      zs[i] = z;
+    }
+    // assert!( !c );   // it would ruin the quickcheck tests..
+    BigInt(zs)
+  }
+
+  #[inline(always)]
+  #[unroll_for_loops]
   pub fn subtract_prime(big: BigInt256) -> (BigInt256, bool) {
-    let mut c  : bool = false;  
+    let mut c  : bool     = false;  
     let mut zs : [u32; 8] = [0; 8];
     for i in 0..8 {
       let (z,cout) = subBorrow32( big.0[i] , PRIME_ARRAY[i] , c );
@@ -516,8 +577,31 @@ impl BigInt256 {
     }
   }
 
+  #[inline(always)]
+  pub fn div_by_2_mod_prime(big: BigInt256) -> BigInt256 {
+    let (half, carry): (BigInt256, bool) = BigInt::shiftRightBy1(big);
+    if carry {
+      BigInt256::add_half_prime_plus_1(half)
+    }
+    else {
+      half
+    }
+  }
+
+  #[inline(always)]
+  pub fn sub_mod_prime(big1: BigInt256, big2: BigInt256) -> BigInt256 {
+    let (big, carry) = BigInt::subBorrow(big1, big2);
+    if carry {
+      let (corrected, _) = BigInt::add_prime(big);
+      corrected
+    }
+    else {
+      big
+    }
+  }
+  
   //------------------------------------
-  // ramndom
+  // random
 
   fn sample_masked(source: &mut (impl RandomSource + ?Sized)) -> BigInt256 {
     let mut xs: [u32; 8] = [0; 8];
