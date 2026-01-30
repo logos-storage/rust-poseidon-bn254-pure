@@ -17,6 +17,7 @@ use std::random::{RandomSource,Distribution};
 
 use unroll::unroll_for_loops;
 
+use crate::bn254::traits::*;
 use crate::bn254::platform::*;
 use crate::bn254::constant::{PRIME_ARRAY};
 
@@ -71,6 +72,19 @@ impl<const N: usize> PartialOrd for BigInt<N> {
 
 impl<const N: usize> Ord for BigInt<N> {
   fn cmp(&self, other: &Self) -> Ordering { BigInt::cmp(*self, *other) }
+}
+
+//--------------------------------------
+// (non-standard ones, too...)
+
+impl<const N: usize> Zero for BigInt<N> {
+  fn zero()           -> Self { BigInt::zero()     }
+  fn is_zero(x: Self) -> bool { BigInt::is_zero(x) }
+}
+
+impl<const N: usize> One for BigInt<N> {
+  fn one()           -> Self { BigInt::one()     }
+  fn is_one(x: Self) -> bool { BigInt::is_one(x) }
 }
 
 //------------------------------------------------------------------------------
@@ -210,6 +224,10 @@ impl<const N: usize> BigInt<N> {
     BigInt([0; N])
   }
 
+  pub fn one() -> BigInt<N> {
+    BigInt::from_u32(1)
+  }
+
   pub fn from_u32(x: u32) -> BigInt<N> {
     let mut xs = [0; N];
     xs[0] = x;
@@ -221,6 +239,20 @@ impl<const N: usize> BigInt<N> {
 
   pub fn is_zero(big: BigInt<N>) -> bool {
     big.0.iter().all(|&x| x == 0)
+  }
+
+  pub fn is_one(big: BigInt<N>) -> bool {
+    let limbs: [u32; N] = big.0;
+    let mut ok: bool = limbs[0] == 1;
+    if ok {
+      for i in 1..N {
+        if limbs[i] != 0 {
+          ok = false;
+          break;
+        }
+      }
+    }
+    ok
   }
 
   pub fn cmp(big1: BigInt<N>, big2: BigInt<N>) -> Ordering {

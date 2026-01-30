@@ -1,6 +1,7 @@
 
 mod platform;
 
+pub mod traits;
 pub mod bigint;
 pub mod constant;
 pub mod montgomery;

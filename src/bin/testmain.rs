@@ -7,6 +7,7 @@ use std::time::Instant;
 use std::ops::{RangeFull};
 use std::random::{Distribution,DefaultRandomSource,random};
 
+use rust_poseidon_bn254_pure::bn254::traits::*;
 use rust_poseidon_bn254_pure::bn254::bigint::*;
 use rust_poseidon_bn254_pure::bn254::constant::*;
 use rust_poseidon_bn254_pure::bn254::montgomery::*;
@@ -236,5 +237,8 @@ fn main() {
   let out4 = poseidon::hash4( Felt::from_u32(1) , Felt::from_u32(2) , Felt::from_u32(3) , Felt::from_u32(4) );
   println!("compress(4) = {}", Felt::to_decimal_string(out4) );
 
+  //----------------------------------------------------------------------------
+
+  println!("{}" , Mont::one() == Mont::convert_from_u32(1) );
 }
 

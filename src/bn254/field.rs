@@ -14,6 +14,7 @@ use std::ops::{Neg,Add,Sub,Mul,RangeFull};
 
 use std::random::{RandomSource,Distribution};
 
+use crate::bn254::traits::*;
 use crate::bn254::bigint::*;
 use crate::bn254::constant::*;
 use crate::bn254::montgomery::*;
@@ -61,6 +62,19 @@ impl Sub for Felt {
 impl Mul for Felt {
   type Output = Self;
   fn mul(self, other: Self) -> Self { Felt::mul(self, other) }
+}
+
+//--------------------------------------
+// (non-standard ones, too...)
+
+impl Zero for Felt {
+  fn zero()           -> Self { Felt::zero()     }
+  fn is_zero(x: Self) -> bool { Felt::is_zero(x) }
+}
+
+impl One for Felt {
+  fn one()            -> Self { Felt::one()      }
+  fn is_one(x: Self)  -> bool { Felt::is_one(x)  }
 }
 
 //------------------------------------------------------------------------------
@@ -111,8 +125,14 @@ impl Felt {
     felt.0
   }
 
+  #[inline(always)]
   pub const fn unsafe_make( xs: [u32; 8] ) -> Felt {
     Felt(BigInt::from_limbs(xs))
+  }
+
+  #[inline(always)]
+  pub fn from_u32(x: u32) -> Felt {
+    Felt(BigInt::from_u32(x))
   }
 
   pub fn checked_make( xs: [u32; 8] ) -> Felt {
@@ -178,15 +198,25 @@ impl Felt {
   }
 
   //------------------------------------
-  // basic operations
   
   pub fn zero() -> Felt {
     Felt(BigInt::zero())
   }
 
-  pub fn from_u32(x: u32) -> Felt {
-    Felt(BigInt::from_u32(x))
+  pub fn one() -> Felt {
+    Felt(BigInt::one())
   }
+
+  pub fn is_zero(x: Felt) -> bool {
+    BigInt::is_zero(x.0)
+  }
+
+  pub fn is_one(x: Felt) -> bool {
+    BigInt::is_one(x.0)
+  }
+
+  //------------------------------------
+  // basic operations
 
   pub fn neg(fld: Felt) -> Felt {
     if BigInt::is_zero(fld.0) {

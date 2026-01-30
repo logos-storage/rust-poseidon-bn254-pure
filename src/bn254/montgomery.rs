@@ -13,6 +13,7 @@ use std::random::{RandomSource,Distribution};
 
 use unroll::unroll_for_loops;
 
+use crate::bn254::traits::*;
 use crate::bn254::platform::*;
 use crate::bn254::bigint::*;
 use crate::bn254::constant::*;
@@ -70,6 +71,19 @@ impl Sub for Mont {
 impl Mul for Mont {
   type Output = Self;
   fn mul(self, other: Self) -> Self { Mont::mul(self, other) }
+}
+
+//--------------------------------------
+// (non-standard ones, too...)
+
+impl Zero for Mont {
+  fn zero()           -> Self { Mont::zero()     }
+  fn is_zero(x: Self) -> bool { Mont::is_zero(x) }
+}
+
+impl One for Mont {
+  fn one()            -> Self { Mont::one()      }
+  fn is_one(x: Self)  -> bool { Mont::is_one(x)  }
 }
 
 //------------------------------------------------------------------------------
@@ -153,6 +167,22 @@ impl Mont {
   pub fn zero() -> Mont {
     Mont(BigInt::zero())
   }
+
+  #[inline(always)]
+  pub fn one() -> Mont {
+    Mont(BIG_R1)
+  }
+
+  #[inline(always)]
+  pub fn is_zero(x: Mont) -> bool {
+    BigInt::is_zero(x.0)
+  }
+
+  pub fn is_one(x: Mont) -> bool {
+    x.0 == BIG_R1
+  }
+
+  //------------------------------------
 
   pub fn neg(mont: Mont) -> Mont {
     if BigInt::is_zero(mont.0) {

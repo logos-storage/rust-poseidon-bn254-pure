@@ -6,6 +6,7 @@
 use quickcheck::{Arbitrary, Gen};
 use quickcheck_macros::quickcheck;
 
+use crate::bn254::traits::*;
 use crate::bn254::bigint::*;
 use crate::bn254::test::properties::*;
 
@@ -14,11 +15,21 @@ type Big7 = BigInt<7>;
 type Big9 = BigInt<9>;
 
 //------------------------------------------------------------------------------
+// some trivialities to get it started
 
 #[test]
-fn zero_is_zero() {
-  assert!( Big::is_zero( Big::zero() ) ) 
-}
+fn zero_is_zero()    { assert!(  Big::is_zero( Big::zero() ) ) }
+
+#[test]
+fn zero_is_not_one() { assert!( !Big::is_one ( Big::zero() ) ) }
+
+#[test]
+fn one_is_not_zero() { assert!( !Big::is_zero( Big::one () ) ) }
+
+#[test]
+fn one_is_one()      { assert!(  Big::is_one ( Big::one () ) ) }
+
+//------------------------------------------------------------------------------
 
 #[test]
 fn unit_to_decimal() {
