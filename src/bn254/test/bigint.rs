@@ -3,10 +3,15 @@
 
 #![allow(unused)]
 
+use quickcheck::{Arbitrary, Gen};
+use quickcheck_macros::quickcheck;
+
 use crate::bn254::bigint::*;
 use crate::bn254::test::properties::*;
 
-type Big = BigInt<8>;
+type Big  = BigInt<8>;
+type Big7 = BigInt<7>;
+type Big9 = BigInt<9>;
 
 //------------------------------------------------------------------------------
 
@@ -50,3 +55,82 @@ fn prop_to_from_bytes_be<const N: usize>(bs: [u8; 4*N]) -> bool {
 }
 
 //------------------------------------------------------------------------------
+// quickcheck property-based testing
+
+impl<const N: usize> Group for BigInt<N> {}
+
+// ...as you apparently cannot have an impl for an array...
+#[derive(Debug, Copy, Clone)]
+struct ByteArray<const K: usize>([u8; K]);
+
+impl<const K: usize> Arbitrary for ByteArray<K> {
+  fn arbitrary(g: &mut Gen) -> ByteArray<K> {
+    let mut bs: [u8; K] = [0; K];
+    for i in 0..K {
+      bs[i] = u8::arbitrary(g);
+    }
+    ByteArray(bs)
+  }
+}
+
+impl<const N: usize> Arbitrary for BigInt<N> {
+  fn arbitrary(g: &mut Gen) -> BigInt<N> {
+    let mut xs: [u32; N] = [0; N];
+    for i in 0..N {
+      xs[i] = u32::arbitrary(g);
+    }
+    BigInt::make(xs)
+  }
+}
+
+//--------------------------------------
+
+#[quickcheck]
+fn from_to_bytes_le(x: Big7) -> bool { prop_from_to_bytes_le::<7>(x) }
+
+#[quickcheck]
+fn from_to_bytes_be(x: Big7) -> bool { prop_from_to_bytes_be::<7>(x) }
+
+#[quickcheck]
+fn to_fom_bytes_le(bs: ByteArray<{7*4}>) -> bool { prop_to_from_bytes_le::<7>(bs.0) }
+
+#[quickcheck]
+fn to_fom_bytes_be (bs: ByteArray<{7*4}>) -> bool { prop_to_from_bytes_be::<7>(bs.0) }
+
+//--------------------------------------
+
+#[quickcheck]
+fn left_additive_unit(x: Big) -> bool { prop_left_additive_unit(x) }
+
+#[quickcheck]
+fn right_additive_unit(x: Big) -> bool { prop_right_additive_unit(x) }
+
+#[quickcheck]
+fn sub_zero(x: Big) -> bool { prop_sub_zero(x) }
+
+#[quickcheck]
+fn zero_sub(x: Big) -> bool { prop_zero_sub(x) }
+
+#[quickcheck]
+fn add_commutative(x: Big, y: Big) -> bool { prop_add_commutative(x,y) }
+
+#[quickcheck]
+fn sub_anticommutative(x: Big, y: Big) -> bool { prop_sub_anticommutative(x,y) }
+
+#[quickcheck]
+fn neg_involutive(x: Big) -> bool { prop_neg_involutive(x) }
+
+#[quickcheck]
+fn add_sub(x: Big, y: Big) -> bool { prop_add_sub(x,y) }
+
+#[quickcheck]
+fn sub_add(x: Big, y: Big) -> bool { prop_sub_add(x,y) }
+
+#[quickcheck]
+fn sub_neg_add(x: Big, y: Big) -> bool { prop_sub_neg_add(x,y) }
+
+#[quickcheck]
+fn sub_add_neg(x: Big, y: Big) -> bool { prop_sub_add_neg(x,y) }
+
+//------------------------------------------------------------------------------
+

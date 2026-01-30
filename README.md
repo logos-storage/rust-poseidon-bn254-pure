@@ -39,24 +39,25 @@ There are three main types:
 - `BigInt<N>` is an unsigned big integer consisting of `N` words (so `2^(32*N)` or `2^(64*N)` bits);
 - `Felt`, short for "Field Element", is a prime field element in the standard representation
   (integers modulo `p`);
-- `Mont` is a field element in the Montgomery represntation. This is used internally 
-  for calculations, as the multiplications is much faster this way.
+- `Mont` is a field element in the Montgomery representation. This is used internally 
+  for calculations, as multiplication (the main bottleneck) is much faster this way.
 
 The core functionality of the Poseidon family of hash functions is the _permutation_, 
-which takes an array of `t` field elements, and returns the same:
+which takes an array of `t >= 2` field elements, and returns the same:
 
     fn permute( [Felt; t] ) -> [Felt; t]
 
-From this one can build all kind of stuff, including a proper hash function (using
+From this one can build all kinds of stuff, including a proper hash function (using
 the so-called "sponge construction). The latter is not implemented in `circomlib`,
-instead, what they have is a compression function parametrized by `t`:
+instead, what they have is a _compression function_ parametrized by `t`:
 
     fn compress( [Felt; t-1] ) -> Felt
 
-This takes `t-1` field elements and returns one (which is interpreted as a hash).
+This takes `t-1` field elements and returns a single one (which is interpreted as a hash. 
+Note that a field element contains about 254 bits of information, which is pretty fine for a cryptographic hash output)
 
-This is implemented by extending the input with a 0, applying the permutation, and
-taking the first element of the output vector (note: in `circomlib`, the extra 0 is 
+This is implemented by extending the input with a `0`, applying the permutation, and
+taking the first element of the output vector (note: in `circomlib`, the extra `0` is 
 at the beginning, not at the end, but that doesn't matter at all; just be consistent).
 
 Remark: That extra zero (called the "capacity") is _extremely important_, without 

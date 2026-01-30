@@ -22,7 +22,7 @@ use crate::bn254::montgomery::*;
 
 type Big = BigInt<8>;
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Felt(Big);
 
 //------------------------------------------------------------------------------

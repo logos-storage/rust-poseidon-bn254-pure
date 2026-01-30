@@ -9,9 +9,13 @@ use std::ops::{Neg,Add,Sub,Mul,Div};
 
 //------------------------------------------------------------------------------
 
-pub trait Group = Copy + Clone + Default + From<u32> + Eq + Neg<Output=Self> + Add<Output=Self> + Sub<Output=Self>;
-pub trait Ring  = Group + Mul<Output=Self>;
-pub trait Field = Ring  + Div<Output=Self>;
+// pub trait Group = Copy + Clone + Default + From<u32> + Eq + Neg<Output=Self> + Add<Output=Self> + Sub<Output=Self>;
+// pub trait Ring  = Group + Mul<Output=Self>;
+// pub trait Field = Ring  + Div<Output=Self>;
+
+pub trait Group : Copy + Clone + Default + From<u32> + Eq + Neg<Output=Self> + Add<Output=Self> + Sub<Output=Self> {}
+pub trait Ring  : Group + Mul<Output=Self> {}
+pub trait Field : Ring  + Div<Output=Self> {}
 
 //------------------------------------------------------------------------------
 
@@ -42,7 +46,7 @@ pub fn prop_sub_zero<A: Group>(x: A) -> bool {
   x - zero::<A>() == x
 }
 
-pub fn prop_zero_subo<A: Group>(x: A) -> bool {
+pub fn prop_zero_sub<A: Group>(x: A) -> bool {
   zero::<A>() - x == xneg(x)
 }
 

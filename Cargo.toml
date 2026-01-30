@@ -1,6 +1,6 @@
 [package]
 name    = "rust-poseidon-bn254-pure"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["Balazs Komuves"]
@@ -11,13 +11,16 @@ default-run = "testmain"
 unroll = ">= 0.1.5"
 
 [dev-dependencies]
-criterion = ">= 0.8"
+criterion  = ">= 0.8"
+quickcheck = "1"
+quickcheck_macros = "1"
 
 [lib]
 bench = false
 
 [profile.release]
-debug = true
+debug = false 
+# debug = true 
 
 [[bin]]
 name  = "testmain"

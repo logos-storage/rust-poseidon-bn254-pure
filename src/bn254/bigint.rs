@@ -11,7 +11,7 @@
 
 use std::fmt;
 use std::cmp::{Ordering,min};
-use std::ops::{Add,Sub,RangeFull};
+use std::ops::{Neg,Add,Sub,RangeFull};
 
 use std::random::{RandomSource,Distribution};
 
@@ -22,7 +22,7 @@ use crate::bn254::constant::{PRIME_ARRAY};
 
 //------------------------------------------------------------------------------
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct BigInt<const N: usize>([u32; N]);
 
 pub type BigInt256 = BigInt<8>;
@@ -49,6 +49,11 @@ impl<const N: usize> BigInt<N> {
 
 //------------------------------------------------------------------------------
 // standard numeric traits
+
+impl<const N: usize> Neg for BigInt<N> {
+  type Output = Self;
+  fn neg(self) -> Self { BigInt::neg(self) }
+}
 
 impl<const N: usize> Add for BigInt<N> {
   type Output = Self;
@@ -273,6 +278,11 @@ impl<const N: usize> BigInt<N> {
     let (out,_) = BigInt::subBorrow(big1,big2);
     out
   }
+
+  pub fn neg(big: BigInt<N>) -> BigInt<N> {
+    BigInt::sub( BigInt::zero() , big )
+  }
+
 
   //------------------------------------
   // multiplication
