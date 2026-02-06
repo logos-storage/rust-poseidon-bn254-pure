@@ -3,51 +3,70 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use std::hint::{black_box};
 
 use rust_poseidon_bn254_pure::bn254::field::*;
-use rust_poseidon_bn254_pure::poseidon;
-use rust_poseidon_bn254_pure::poseidon2;
 
 //------------------------------------------------------------------------------
 
 type Triple = [Felt; 3];
 
-fn initial_triple() -> Triple {
-  [ Felt::from_u32(0)
-  , Felt::from_u32(1)
-  , Felt::from_u32(2)
-  ]
-}
-
-fn iterate_poseidon1(n: usize) -> Triple {
-  let mut state: Triple = initial_triple();
-  for _i in 0..n {
-    state = poseidon::permute::<3>(state);
+fn initial_state<const T: usize>() -> [Felt; T] {
+  let mut xs: [Felt; T] = [Default::default(); T];
+  for i in 0..T {
+    xs[i] = Felt::from_u32(i as u32);
   }
-  state
+  xs
 }
 
-fn iterate_poseidon2(n: usize) -> Triple {
-  let mut state: Triple = initial_triple();
-  for _i in 0..n {
-    state = poseidon2::permute(state);
+mod v1 {
+  use super::*;
+  use rust_poseidon_bn254_pure::poseidon::*;
+  
+  fn iterate_poseidon1<const T: usize>(n: usize) -> [Felt; T] where Params: PoseidonParams<T> {
+    let mut state: [Felt; T] = initial_state::<T>();
+    for _i in 0..n {
+      state = permute::<T>(state);
+    }
+    state
   }
-  state
+
+  pub fn bench_iterated_poseidon1<const T: usize>(c: &mut Criterion, n: usize) where Params: PoseidonParams<T> {
+    let msg = format!("Poseidon1 permutation w/ state width t={} iterated {} times", T, n);
+    c.bench_function(&msg, |b| b.iter(|| iterate_poseidon1::<T>(black_box(n)) ));
+  }
+
 }
 
-fn bench_iterated_poseidon1(c: &mut Criterion , n: usize) {
-  let msg = format!("Poseidon1 permutation iterated {} times", n);
-  c.bench_function(&msg, |b| b.iter(|| iterate_poseidon1(black_box(n)) ));
-}
 
-fn bench_iterated_poseidon2(c: &mut Criterion , n: usize) {
-  let msg = format!("Poseidon2 permutation iterated {} times", n);
-  c.bench_function(&msg, |b| b.iter(|| iterate_poseidon2(black_box(n)) ));
+mod v2 {
+  use super::*;
+  use rust_poseidon_bn254_pure::poseidon2::old::*;
+
+  fn iterate_poseidon2<const T: usize>(n: usize) -> [Felt; T] where Params: Poseidon2Params<false,T> {
+    let mut state: [Felt; T] = initial_state::<T>();
+    for _i in 0..n {
+      state = permute::<T>(state);
+    }
+    state
+  }
+  
+  pub fn bench_iterated_poseidon2<const T: usize>(c: &mut Criterion, n: usize) where Params: Poseidon2Params<false,T> {
+    let msg = format!("Poseidon2 permutation w/ state width t={} iterated {} times", T, n);
+    c.bench_function(&msg, |b| b.iter(|| iterate_poseidon2::<T>(black_box(n)) ));
+  }
+
 }
 
 //------------------------------------------------------------------------------
 
 fn bench_permutations(c: &mut Criterion) {
-  bench_iterated_poseidon1(c, 10000);
-  bench_iterated_poseidon2(c, 10000);
+
+  v1::bench_iterated_poseidon1::<2> (c, 10000);
+  v1::bench_iterated_poseidon1::<3> (c, 10000);
+  v1::bench_iterated_poseidon1::<4> (c, 10000);
+
+  v2::bench_iterated_poseidon2::<2> (c, 10000);
+  v2::bench_iterated_poseidon2::<3> (c, 10000);
+  v2::bench_iterated_poseidon2::<4> (c, 10000);
+
 }
 
 //------------------------------------------------------------------------------

@@ -9,5 +9,6 @@ pub use permutation::hash4;
 
 pub use permutation::compress;
 
+pub use permutation::{Params,PoseidonParams};
 pub use permutation::permute;
 pub use permutation::permute_mont;

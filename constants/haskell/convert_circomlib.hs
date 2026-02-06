@@ -1,5 +1,5 @@
 
--- script to convert the round constants to the desired format
+-- script to convert circomlib's round constants to the desired format
 
 module Main where
 
@@ -18,17 +18,6 @@ import Circomlib
 
 tgtDir :: FilePath
 tgtDir = "out"
-
---------------------------------------------------------------------------------
-
-integerToRust32 :: Integer -> String
-integerToRust32 x = "Mont::unsafe_make( " ++ toMontString32 x ++ " )"
-
-listToRust32 :: [Integer] -> [String]
-listToRust32 xs = zipWith f prefixes xs ++ [close] where
-  f p x = p ++ integerToRust32 x
-  prefixes = "  [ " : repeat "  , "
-  close    = "  ];"
 
 --------------------------------------------------------------------------------
 

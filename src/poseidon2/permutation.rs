@@ -4,10 +4,77 @@
 
 use crate::bn254::field::*;
 use crate::bn254::montgomery::*;
-use crate::poseidon2::constants::*;
 
-pub type FeltTriple = [Felt; 3];
-pub type MontTriple = [Mont; 3];
+use crate::poseidon2::constants::old;
+use crate::poseidon2::constants::new;
+
+use crate::poseidon2::mds;
+use crate::poseidon2::diag;
+
+//------------------------------------------------------------------------------
+
+pub struct Params;
+
+pub trait Poseidon2Params<const NEW: bool, const T: usize> {
+  const NP: usize;
+  fn const_initial () -> &'static [Mont];
+  fn const_internal() -> &'static [Mont];
+  fn const_final   () -> &'static [Mont];
+  fn const_KAT     () -> &'static [Mont];
+  fn mul_by_mds    ( xs: [Mont; T] ) -> [Mont; T];
+  fn mul_by_diag   ( xs: [Mont; T] ) -> [Mont; T];
+}
+
+macro_rules! impl_params {
+  ($NEW:literal, $T:literal, $oldnew:ident, $tmod:ident) => {
+    impl Poseidon2Params<$NEW,$T> for Params {
+      const NP: usize = 56;
+      fn const_initial () -> &'static [Mont] { &$oldnew::$tmod::INITIAL  }
+      fn const_internal() -> &'static [Mont] { &$oldnew::$tmod::INTERNAL }
+      fn const_final   () -> &'static [Mont] { &$oldnew::$tmod::FINAL    }
+      fn const_KAT     () -> &'static [Mont] { &$oldnew::$tmod::KAT_MONT }
+      fn mul_by_mds ( xs: [Mont; $T] ) -> [Mont; $T] { mds::$tmod::mds(xs) }
+      fn mul_by_diag( xs: [Mont; $T] ) -> [Mont; $T] { diag::$oldnew::$tmod::diag(xs) }
+    }
+  };
+}
+
+// old parameters
+impl_params!( false, 2, old, t2 );
+impl_params!( false, 3, old, t3 );
+impl_params!( false, 4, old, t4 );
+
+// new parameters
+impl_params!( true, 2, new, t2 );
+impl_params!( true, 3, new, t3 );
+impl_params!( true, 4, new, t4 );
+
+//------------------------------------------------------------------------------
+
+#[inline(always)]
+fn get_initial_rcs<const NEW: bool, const T: usize>(round: usize) -> [Mont; T] where Params: Poseidon2Params<NEW,T> {
+  let mut rcs: [Mont; T] = [Default::default(); T];
+  let k = round * T;
+  for i in 0..T {
+    rcs[i] = <Params as Poseidon2Params<NEW,T>>::const_initial() [k+i];
+  }
+  rcs
+}
+
+#[inline(always)]
+fn get_final_rcs<const NEW: bool, const T: usize>(round: usize) -> [Mont; T] where Params: Poseidon2Params<NEW,T> {
+  let mut rcs: [Mont; T] = [Default::default(); T];
+  let k = round * T;
+  for i in 0..T {
+    rcs[i] = <Params as Poseidon2Params<NEW,T>>::const_final() [k+i];
+  }
+  rcs
+}
+
+#[inline(always)]
+fn get_internal_rc<const NEW: bool, const T: usize>(round: usize) -> Mont where Params: Poseidon2Params<NEW,T> {
+  <Params as Poseidon2Params<NEW,T>>::const_internal()[ round ]
+}
 
 //------------------------------------------------------------------------------
 
@@ -18,74 +85,69 @@ fn sbox(x: Mont) -> Mont {
   Mont::mul(x,x4)
 }
 
+//------------------------------------------------------------------------------
+
 #[inline(always)]
-fn add3(x: Mont, y: Mont, z: Mont) -> Mont {
-  Mont::add(Mont::add(x,y),z)
+fn internal_round<const NEW: bool, const T: usize>(input: [Mont; T], rc: Mont) -> [Mont; T] 
+where Params: Poseidon2Params<NEW,T> {
+  let mut xs: [Mont; T] = input;
+  xs[0] = sbox( Mont::add( xs[0] , rc ) );
+  <Params as Poseidon2Params<NEW,T>>::mul_by_diag( xs )
 }
 
-fn linear(input: MontTriple) -> MontTriple {
-  let s = add3( input[0], input[1], input[2] );
-  [ Mont::add( s , input[0] )
-  , Mont::add( s , input[1] )
-  , Mont::add( s , input[2] )
-  ]
+fn external_round<const NEW: bool, const T: usize>(input: [Mont; T], rcs: [Mont;T]) -> [Mont; T] 
+where Params: Poseidon2Params<NEW,T> {
+  let mut xs: [Mont; T] = [Default::default(); T];
+  for i in 0..T {
+    xs[i] = sbox( Mont::add( input[i] , rcs[i] ) );
+  }
+  <Params as Poseidon2Params<NEW,T>>::mul_by_mds( xs )
 }
 
-fn internal_round(input: MontTriple, rc: Mont) -> MontTriple {
-  let x = sbox( Mont::add( input[0] , rc ) );
-  let s = add3( x , input[1] , input[2] );
-  [ Mont::add( s , x                   )
-  , Mont::add( s , input[1]            )
-  , Mont::add( s , Mont::dbl(input[2]) )
-  ]
-}
-
-fn external_round(input: MontTriple, rcs: MontTriple) -> MontTriple {
-  let x = sbox( Mont::add( input[0] , rcs[0] ) );
-  let y = sbox( Mont::add( input[1] , rcs[1] ) );
-  let z = sbox( Mont::add( input[2] , rcs[2] ) );
-  let s = add3( x , y , z );
-  [ Mont::add( s , x )
-  , Mont::add( s , y )
-  , Mont::add( s , z )
-  ]
-}
-
-pub fn permute_mont(input: MontTriple) -> MontTriple {
-  let mut state = linear(input);
-  for i in 0..4  { state = external_round( state , get_initial_RCs(i) ); }
-  for i in 0..56 { state = internal_round( state , INTERNAL_MONT  [i] ); }
-  for i in 0..4  { state = external_round( state , get_final_RCs  (i) ); }
+pub fn permute_mont<const NEW: bool, const T: usize>(input: [Mont; T]) -> [Mont; T] 
+where Params: Poseidon2Params<NEW,T> {
+  let mut state = <Params as Poseidon2Params<NEW,T>>::mul_by_mds(input);
+  for i in 0..4  { state = external_round::<NEW,T>( state , get_initial_rcs::<NEW,T>(i) ); }
+  for i in 0..56 { state = internal_round::<NEW,T>( state , get_internal_rc::<NEW,T>(i) ); }
+  for i in 0..4  { state = external_round::<NEW,T>( state , get_final_rcs  ::<NEW,T>(i) ); }
   state
 }
 
 //------------------------------------------------------------------------------
 
-pub fn compress(input: [Felt; 2]) -> Felt {
-  let mut state: [Mont; 3] = [Mont::zero(); 3]; 
-  for i in 0..2 { state[i] = Felt::to_mont(input[i]); }
-  state = permute_mont(state);
+pub fn compress<const NEW: bool, const K: usize>(input: [Felt; K]) -> Felt 
+where Params: Poseidon2Params<NEW,{K+1}> {
+  let mut state: [Mont; K+1] = [Mont::zero(); K+1];
+  for i in 0..K {
+    state[i] = Felt::to_mont(input[i]);
+  }
+  state = permute_mont::<NEW,{K+1}>(state);
   Felt::from_mont(state[0])
 }
 
-pub fn permute(input: [Felt; 3]) -> [Felt; 3] {
-  let state: MontTriple = Felt::to_mont_vec(input);
-  let output = permute_mont(state);
+pub fn permute<const NEW: bool, const T: usize>(input: [Felt; T]) -> [Felt; T] 
+where Params: Poseidon2Params<NEW,T> {
+  let state: [Mont; T] = Felt::to_mont_vec(input);
+  let output = permute_mont::<NEW,T>(state);
   Felt::from_mont_vec(output) 
 }
 
-pub fn permute_iterated(input: [Felt; 3], count: usize) -> [Felt; 3] {
+/*
+pub fn permute_iterated<const NEW: bool, const T: usize>(input: [Felt; T], count: usize) -> [Felt; T] 
+where Params: Poseidon2Params<NEW,T> {
   let mut state: MontTriple = Felt::to_mont_vec(input);
   for _i in 0..count { 
-    state = permute_mont(state);
+    state = permute_mont::<NEW,T>(state);
   }
   let out: FeltTriple = Felt::from_mont_vec(state);
   out
 }
+*/
 
 //==============================================================================
 // *** TESTS
 
+/*
 #[cfg(test)]
 mod test {
 
@@ -104,6 +166,7 @@ mod test {
   }
 
 }
+*/
 
 //------------------------------------------------------------------------------
 

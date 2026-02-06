@@ -115,7 +115,7 @@ fn main() {
   println!("");
 
   let input  = [ Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) ];
-  let output = poseidon2::permute( input );
+  let output = poseidon2::old::permute( input );
 
   println!("x  = {}", input[0] );
   println!("y  = {}", input[1] );
@@ -140,7 +140,7 @@ fn main() {
   let now = Instant::now();
   let mut state: [Felt; 3] = input.clone(); 
   for _i in 0..10000 {
-    state = poseidon2::permute(state);
+    state = poseidon2::old::permute(state);
   }
 
   // expected output:

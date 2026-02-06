@@ -132,14 +132,32 @@ flipFoldl :: (b -> a -> b) -> [a] -> b -> b
 flipFoldl f ys x = foldl' f x ys
 
 permute :: Instance -> State -> State
-permute which input = output where
-  extMDS  = externalMDS  which
-  intDiag = internalDiag which
-  ( rcIni , rcMiddle , rcFinal ) = splitRoundConsts (roundConsts which)
-  output = flipFoldl (externalRound extMDS ) rcFinal
-         $ flipFoldl (internalRound intDiag) rcMiddle
-         $ flipFoldl (externalRound extMDS ) rcIni
-         $ mdsMul extMDS 
-         $ input
+permute which@(MkInstance width paramSet) input 
+  | length input /= fromInteger (fromWidth width) = error "permute: invalid input dimensions"
+  | otherwise = output
+  where
+    extMDS  = externalMDS  which
+    intDiag = internalDiag which
+    ( rcIni , rcMiddle , rcFinal ) = splitRoundConsts (roundConsts which)
+    output = flipFoldl (externalRound extMDS ) rcFinal
+           $ flipFoldl (internalRound intDiag) rcMiddle
+           $ flipFoldl (externalRound extMDS ) rcIni
+           $ mdsMul extMDS 
+           $ input
+
+compress :: Instance -> [F] -> F
+compress which@(MkInstance width _paramset) input 
+  | length input /= fromInteger (fromWidth width - 1)  = error "compress: invalid input dimensions"
+  | otherwise = head (permute which $ input ++ [0])
 
 --------------------------------------------------------------------------------
+
+compressionTestCases :: IO ()
+compressionTestCases = forM_ allInstances $ \which@(MkInstance width _paramset) -> do
+  putStrLn "-----------------------"
+  putStrLn $ "instance = " ++ show which
+  let w = fromWidth width
+  let input = map (*111) [1..w-1] :: [Integer]
+  putStrLn $ "input = " ++ show input
+  let hash = compress which (map toF input)
+  putStrLn $ "hash  = " ++ show hash

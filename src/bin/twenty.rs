@@ -6,7 +6,7 @@ fn main() {
 
   println!("iterating Poseidon2 twenty times");
 
-  let input  = [ Felt::from_u32(0) , Felt::from_u32(1) , Felt::from_u32(2) ];
+  let input = poseidon2::aux::kat_input::<3>();
 
   println!("x  = {}", input[0] );
   println!("y  = {}", input[1] );
@@ -14,7 +14,7 @@ fn main() {
 
   let mut state: [Felt; 3] = input.clone(); 
   for _i in 0..20 {
-    state = poseidon2::permute(state);
+    state = poseidon2::old::permute(state);
   }
   println!("x' = {}", state[0] );
   println!("y' = {}", state[1] );

@@ -85,8 +85,14 @@ Some approximate benchmark numbers below.
 
 On RV32IM (the primary target as of now), we have approximately the following cycle counts:
 
-- Poseidon: about 900k cycles for a single `t=3` permutation
-- Poseidon2: about 350k cycles for a single `t=3` permutation
+- Poseidon: 
+    - about 615k cycles for a single `t=2` permutation
+    - about 915k cycles for a `t=3` permutation
+    - about 1220k cycles for a `t=4` permutation
+- Poseidon2: 
+    - about 325k cycles for a single `t=2` permutation
+    - about 375k cycles for a `t=3` permutation
+    - about 7705 cycles for a `t=4` permutation
 
 Note: Poseidon is about 2.5x slower, simply because there are about 2.5x more 
 field multiplications involved (which absolutely dominate the runtime).
@@ -97,8 +103,14 @@ On modern 64-bit CPU-s, the 64-bit version would be preferred (TODO: implement i
 
 32 bit version, running on an M2 macbook pro (single threaded):
 
-- Poseidon:  320 msec for 10,000 `t=3` permutations
-- Poseidon2: 140 msec for 10,000 `t=3` permutations
+- Poseidon:  
+    - 214 msec for 10,000 `t=2` permutations
+    - 314 msec for 10,000 `t=3` permutations
+    - 414 msec for 10,000 `t=4` permutations
+- Poseidon2: 
+    - 124 msec for 10,000 `t=2` permutations
+    - 142 msec for 10,000 `t=3` permutations
+    - 271 msec for 10,000 `t=4` permutations
 
 ### TODO
 
