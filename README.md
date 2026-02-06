@@ -8,7 +8,7 @@ limbs internally.
 It's primarily intended to be used on 32-bit platforms, eg. 32-bit RISC-V (`rv32im`)
 (though porting to 64 bits shouldn't be a big effort; TODO).
 
-The algebra implementation is based on [`zikkurat-algebra`](https://github.com/faulhornlabs/zikkurat-algebra/)
+The algebra implementation is mostly based on [`zikkurat-algebra`](https://github.com/faulhornlabs/zikkurat-algebra/)
 and [`staging-agda`](https://github.com/faulhornlabs/staging-agda/).
 
 ### Compatibility
@@ -16,21 +16,35 @@ and [`staging-agda`](https://github.com/faulhornlabs/staging-agda/).
 The Poseidon implementation is compatible with [`circomlib`](https://github.com/iden3/circomlib/).
 
 The Poseidon2 implementation is compatible with [`zkfriendlyhashzoo`](https://extgit.isec.tugraz.at/krypto/zkfriendlyhashzoo).
-It _used to be_ compatible with the [HorizenLabs implementation](https://github.com/HorizenLabs/poseidon2),
-until they changed all their constants in [this commit](https://github.com/HorizenLabs/poseidon2/commit/bb476b9ca38198cf5092487283c8b8c5d4317c4e).
-We don't think it's worth the pain to follow this change.
+and the [HorizenLabs implementation(s)](https://github.com/HorizenLabs/poseidon2).
 
-### Status
+#### Important compatibility note
 
-Currently, only the following instances are implemented:
+For Poseidon2, because of a historical accident, there are unfortunately TWO different 
+sets of "standard" parameters, which is obviously bad for cross-project compatibility.
+
+For example [Codex used](https://github.com/logos-storage/logos-storage-proofs-circuits/tree/master/circuit/poseidon2) 
+Poseidon2 w/ `t=3` and the "old" parameters, while
+[Aztec's Barretenberg](https://github.com/AztecProtocol/barretenberg/tree/master/cpp/src/barretenberg/crypto/poseidon2) 
+uses `t=4` and the "new" parameters. 
+
+The switchover happened in 
+[commit #bb476b9ca38198cf5092487283c8b8c5d4317c4e](https://github.com/HorizenLabs/poseidon2/commit/bb476b9ca38198cf5092487283c8b8c5d4317c4e)
+in HorizenLab's reference repo. Both versions are safe to use though, and 
+to resolve this issue, we implement both sets.
+
+### Implementation status
+
+Currently, the following instances are implemented:
 
 - Poseidon permutation with `t=2,3,4,5` over BN254's scalar field
-- Poseidon2 permutation with `t=3` over BN254's scalar field
+- Poseidon2 permutation with `t=2,3,4` over BN254's scalar field (Poseidon2 is not officially specified for `t=5`)
 
-I feel that larger states are unneccesary in practice. As a concrete example,
+While `circomlib` implements state widths up to `t=17`, I feel that larger 
+states (eg. `t > 4` in case of BN254) are unneccesary in practice. As a concrete example,
 [PSE's RLN circuit](https://github.com/Rate-Limiting-Nullifier/circom-rln) uses `t=2,3,4`.
 
-The proper way to handle larger input is to implement the sponge construction.
+The proper way to handle larger input is to implement the sponge construction instead.
 
 ### Usage
 
@@ -92,10 +106,10 @@ On modern 64-bit CPU-s, the 64-bit version would be preferred (TODO: implement i
 - [x] implement `circomlib`-compatible Poseidon
 - [x] benchmark RISC-V cycles
 - [x] add a proper test-suite; in particular, more complete testing of the field operations
+- [x] add more Poseidon2 state widths (not just `t=3`)
 - [ ] add more tests for the corner cases specifically
-- [ ] add more Poseidon2 state widths (not just `t=3`)
-- [ ] add a 64 bit version
 - [ ] implement the sponge construction
+- [ ] add a 64 bit version
 - [ ] optimize squaring to use less multiplications (?)
 - [ ] investigate further optimization possibilities (?)
 

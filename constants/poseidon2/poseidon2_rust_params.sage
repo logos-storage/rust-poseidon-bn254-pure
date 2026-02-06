@@ -29,7 +29,7 @@ n = len(p.bits()) # bit
 t = 4
 
 FIELD = 1
-SBOX  = 1   # SBOX = 0   # we use the "old" version to be consistent with existing Poseidon2 implementations.
+SBOX  = 1     # NOTE: `SBOX=0` gives the new set of parameters; and `SBOX=1` is the old set
 FIELD_SIZE = n
 NUM_CELLS = t
 

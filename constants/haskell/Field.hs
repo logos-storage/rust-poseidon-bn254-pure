@@ -34,6 +34,30 @@ mul x y = modp (x * y)
 hex :: Integer -> IO ()
 hex = printf "0x%x\n"
 
+----------------------------------------
+
+newtype F 
+  = MkF Integer
+  deriving (Eq)
+
+toF :: Integer -> F
+toF = MkF . modp
+
+fromF :: F -> Integer
+fromF (MkF x) = x
+
+instance Show F where
+  show (MkF x) = printf "0x%032x" x
+
+instance Num F where
+  fromInteger = toF
+  negate x = MkF $ neg (fromF x)
+  (+) x y  = MkF $ add (fromF x) (fromF y)
+  (-) x y  = MkF $ sub (fromF x) (fromF y)
+  (*) x y  = MkF $ mul (fromF x) (fromF y)
+  abs      = error "abs"
+  signum   = error "signum"
+
 --------------------------------------------------------------------------------
 
 showWord32 :: Word32 -> String
